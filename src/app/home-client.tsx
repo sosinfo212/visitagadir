@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { isHtmlContent, stripHtml } from '@/lib/blog/html'
 import { LISTING_DEFAULT_IMAGE } from '@/lib/listing-images'
+import { listingWebsiteHref } from '@/lib/listing-contact'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -1684,7 +1685,7 @@ export default function Home({
                               </div>
                               <div>
                                 <p className="font-medium">Website</p>
-                                <a href={`https://${selectedListing.website}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center gap-1">
+                                <a href={listingWebsiteHref(selectedListing.website)} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center gap-1">
                                   {selectedListing.website}
                                   <ExternalLink className="h-3.5 w-3.5" />
                                 </a>
@@ -1725,7 +1726,7 @@ export default function Home({
                         )}
                         {selectedListing.website && (
                           <Button variant="outline" className="w-full" asChild>
-                            <a href={`https://${selectedListing.website}`} target="_blank" rel="noopener noreferrer">
+                            <a href={listingWebsiteHref(selectedListing.website)} target="_blank" rel="noopener noreferrer">
                               <Globe className="h-4 w-4 mr-2" />
                               Visit Website
                             </a>

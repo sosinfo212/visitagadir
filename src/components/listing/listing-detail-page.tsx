@@ -4,6 +4,7 @@ import { isHtmlContent } from '@/lib/blog/html'
 import { categoryPath, listingPath } from '@/lib/seo/url'
 import { BreadcrumbNav } from '@/components/seo/breadcrumb-nav'
 import { ListingReviewForm } from '@/components/listing/listing-review-form'
+import { listingWebsiteHref } from '@/lib/listing-contact'
 import type { getListingSeoBundle } from '@/lib/seo/service'
 
 type ListingBundle = NonNullable<Awaited<ReturnType<typeof getListingSeoBundle>>>
@@ -143,7 +144,7 @@ export function ListingDetailPage({ bundle }: { bundle: ListingBundle }) {
                     <div>
                       <p className="font-medium">Website</p>
                       <a
-                        href={listing.website.startsWith('http') ? listing.website : `https://${listing.website}`}
+                        href={listingWebsiteHref(listing.website)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-blue-600 hover:underline"
@@ -191,17 +192,44 @@ export function ListingDetailPage({ bundle }: { bundle: ListingBundle }) {
           </div>
 
           <aside className="space-y-6">
-            <div className="bg-white border rounded-xl p-5 text-center">
-              <div className="text-4xl font-bold mb-1">{rating.toFixed(1)}</div>
-              <StarDisplay rating={rating} />
-              <p className="text-sm text-muted-foreground mt-2">{reviewCount} reviews</p>
-              {listing.phone && (
-                <a
-                  href={`tel:${listing.phone}`}
-                  className="mt-4 inline-flex w-full items-center justify-center rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600"
-                >
-                  Call Now
-                </a>
+            <div className="bg-white border rounded-xl p-5">
+              <div className="text-center">
+                <div className="text-4xl font-bold mb-1">{rating.toFixed(1)}</div>
+                <StarDisplay rating={rating} />
+                <p className="text-sm text-muted-foreground mt-2">{reviewCount} reviews</p>
+              </div>
+              {(listing.phone || listing.website || listing.email) && (
+                <div className="mt-4 space-y-2">
+                  {listing.phone && (
+                    <a
+                      href={`tel:${listing.phone}`}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600"
+                    >
+                      <Phone className="h-4 w-4" />
+                      Call Now
+                    </a>
+                  )}
+                  {listing.website && (
+                    <a
+                      href={listingWebsiteHref(listing.website)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium hover:bg-gray-50"
+                    >
+                      <Globe className="h-4 w-4" />
+                      Visit Website
+                    </a>
+                  )}
+                  {listing.email && (
+                    <a
+                      href={`mailto:${listing.email}`}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium hover:bg-gray-50"
+                    >
+                      <Mail className="h-4 w-4" />
+                      Send Email
+                    </a>
+                  )}
+                </div>
               )}
             </div>
 
