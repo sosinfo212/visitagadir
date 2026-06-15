@@ -4,6 +4,7 @@ import { isHtmlContent } from '@/lib/blog/html'
 import { categoryPath, listingPath } from '@/lib/seo/url'
 import { BreadcrumbNav } from '@/components/seo/breadcrumb-nav'
 import { ListingReviewForm } from '@/components/listing/listing-review-form'
+import { ListingPhotosGallery } from '@/components/listing/listing-photos-gallery'
 import { listingWebsiteHref } from '@/lib/listing-contact'
 import { LISTING_DEFAULT_IMAGE } from '@/lib/listing-images'
 import type { getListingSeoBundle } from '@/lib/seo/service'
@@ -95,21 +96,8 @@ export function ListingDetailPage({ bundle }: { bundle: ListingBundle }) {
 
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
-            {images.length > 1 && (
-              <section className="bg-white border rounded-xl p-4">
-                <h2 className="text-lg font-semibold mb-3">Photos</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {images.map((src, i) => (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      key={src + i}
-                      src={src}
-                      alt={`${listing.name} photo ${i + 1}`}
-                      className="w-full h-28 object-cover rounded-lg"
-                    />
-                  ))}
-                </div>
-              </section>
+            {images.length > 0 && (
+              <ListingPhotosGallery name={listing.name} images={images} />
             )}
 
             <section className="bg-white border rounded-xl p-6">
