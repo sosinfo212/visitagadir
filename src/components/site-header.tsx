@@ -20,13 +20,23 @@ import { Button } from '@/components/ui/button'
 import { categoryBgColors, getCategoryIcon } from '@/lib/category-icons'
 import { categoryPath } from '@/lib/seo/url'
 import { AddBusinessModal, type CategoryWithCount } from '@/components/add-business-modal'
+import type { AppSettingsPublic } from '@/lib/app-settings'
 
 const businessLoginUrl = '/login?callbackUrl=%2Fmy-listings'
 
-export function SiteHeader() {
+function headerBrandingFromSettings(branding?: AppSettingsPublic | null) {
+  return {
+    siteName: branding?.siteName ?? 'Agadir Directory',
+    siteLogoUrl: branding?.siteLogoUrl ?? '/agadir-logo.png',
+    siteLogoWidth: branding?.siteLogoWidth ?? 32,
+    siteLogoHeight: branding?.siteLogoHeight ?? 32,
+  }
+}
+
+export function SiteHeader({ branding }: { branding?: AppSettingsPublic | null }) {
   return (
     <Suspense fallback={<SiteHeaderFallback />}>
-      <SiteHeaderInner />
+      <SiteHeaderInner initialBranding={branding} />
     </Suspense>
   )
 }
@@ -41,19 +51,14 @@ function SiteHeaderFallback() {
   )
 }
 
-function SiteHeaderInner() {
+function SiteHeaderInner({ initialBranding }: { initialBranding?: AppSettingsPublic | null }) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const { data: session, status } = useSession()
 
   const [categories, setCategories] = useState<CategoryWithCount[]>([])
-  const [siteBranding, setSiteBranding] = useState({
-    siteName: 'Agadir Directory',
-    siteLogoUrl: '/agadir-logo.png',
-    siteLogoWidth: 32,
-    siteLogoHeight: 32,
-  })
+  const [siteBranding, setSiteBranding] = useState(() => headerBrandingFromSettings(initialBranding))
   const [searchQuery, setSearchQuery] = useState('')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [desktopDropdownOpen, setDesktopDropdownOpen] = useState(false)
@@ -86,12 +91,7 @@ function SiteHeaderInner() {
       )
       setCategories(catsWithCount)
       if (branding?.siteName) {
-        setSiteBranding({
-          siteName: branding.siteName,
-          siteLogoUrl: branding.siteLogoUrl || '/agadir-logo.png',
-          siteLogoWidth: branding.siteLogoWidth || 32,
-          siteLogoHeight: branding.siteLogoHeight || 32,
-        })
+        setSiteBranding(headerBrandingFromSettings(branding))
       }
     })
   }, [])

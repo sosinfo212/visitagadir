@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Separator } from '@/components/ui/separator'
 import { categoryPath } from '@/lib/seo/url'
+import type { AppSettingsPublic } from '@/lib/app-settings'
 
 interface CategoryLink {
   id: string
@@ -11,14 +12,18 @@ interface CategoryLink {
   slug: string
 }
 
-export function SiteFooter() {
+function footerBrandingFromSettings(branding?: AppSettingsPublic | null) {
+  return {
+    siteName: branding?.siteName ?? 'Agadir Directory',
+    footerLogoUrl: branding?.footerLogoUrl || branding?.siteLogoUrl || '/agadir-logo.png',
+    footerLogoWidth: branding?.footerLogoWidth ?? 32,
+    footerLogoHeight: branding?.footerLogoHeight ?? 32,
+  }
+}
+
+export function SiteFooter({ branding }: { branding?: AppSettingsPublic | null }) {
   const [categories, setCategories] = useState<CategoryLink[]>([])
-  const [branding, setBranding] = useState({
-    siteName: 'Agadir Directory',
-    footerLogoUrl: '/agadir-logo.png',
-    footerLogoWidth: 32,
-    footerLogoHeight: 32,
-  })
+  const [footerBranding, setFooterBranding] = useState(() => footerBrandingFromSettings(branding))
 
   useEffect(() => {
     Promise.all([
@@ -27,12 +32,7 @@ export function SiteFooter() {
     ]).then(([cats, settings]) => {
       setCategories(Array.isArray(cats) ? cats : [])
       if (settings?.siteName) {
-        setBranding({
-          siteName: settings.siteName,
-          footerLogoUrl: settings.footerLogoUrl || settings.siteLogoUrl || '/agadir-logo.png',
-          footerLogoWidth: settings.footerLogoWidth || 32,
-          footerLogoHeight: settings.footerLogoHeight || 32,
-        })
+        setFooterBranding(footerBrandingFromSettings(settings))
       }
     })
   }, [])
@@ -47,15 +47,15 @@ export function SiteFooter() {
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center gap-2.5 mb-4">
               <img
-                src={branding.footerLogoUrl}
-                alt={branding.siteName}
+                src={footerBranding.footerLogoUrl}
+                alt={footerBranding.siteName}
                 className="rounded-lg object-contain"
                 style={{
-                  width: branding.footerLogoWidth,
-                  height: branding.footerLogoHeight,
+                  width: footerBranding.footerLogoWidth,
+                  height: footerBranding.footerLogoHeight,
                 }}
               />
-              <span className="font-bold text-lg">{branding.siteName}</span>
+              <span className="font-bold text-lg">{footerBranding.siteName}</span>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed">
               Your complete guide to discovering the best of Agadir, Morocco. Find restaurants, hotels, beaches, services, and more.
@@ -103,7 +103,7 @@ export function SiteFooter() {
 
         <Separator className="my-8 bg-gray-800" />
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500">
-          <p>&copy; {new Date().getFullYear()} {branding.siteName}. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} {footerBranding.siteName}. All rights reserved.</p>
           <div className="flex items-center gap-4">
             <p>Made with ❤️ in Agadir, Morocco</p>
             <Link href="/admin/login" className="text-gray-500 hover:text-gray-300 transition-colors text-xs">
