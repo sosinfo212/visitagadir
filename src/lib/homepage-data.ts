@@ -12,7 +12,7 @@ export interface HomepageInitialData {
     name: string
     slug: string
     icon: string
-    description: string
+    description: string | null
     listingCount: number
   }>
   featuredListings: Array<{
@@ -67,7 +67,7 @@ export async function getHomepageInitialData(): Promise<HomepageInitialData> {
     }),
     db.blogPost.findMany({
       where: { status: 'published' },
-      take: 3,
+      take: 4,
       orderBy: { publishedAt: 'desc' },
       select: {
         id: true,

@@ -47,7 +47,7 @@ interface Category {
   name: string
   slug: string
   icon: string
-  description: string
+  description: string | null
   _count?: { listings: number }
 }
 
@@ -1201,6 +1201,11 @@ export default function Home({
                         {getCategoryIcon(cat.icon)}
                       </div>
                       <h4 className="font-semibold text-sm sm:text-base leading-tight mb-1">{cat.name}</h4>
+                      {cat.description && (
+                        <p className="text-xs text-muted-foreground line-clamp-2 mb-2 leading-relaxed">
+                          {cat.description}
+                        </p>
+                      )}
                       <p className="text-xs text-muted-foreground">{cat.listingCount} listings</p>
                       <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50 group-hover:text-foreground group-hover:translate-x-1 transition-all" />
                     </motion.button>
