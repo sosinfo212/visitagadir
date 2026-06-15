@@ -25,7 +25,8 @@ export async function getRelatedBlogPosts(args: {
   limit?: number
 }): Promise<RelatedBlogPost[]> {
   const limit = args.limit ?? 4
-  return db.blogPost.findMany({
+
+  const sameCategory = await db.blogPost.findMany({
     where: {
       status: 'published',
       categoryId: args.categoryId,
@@ -34,6 +35,7 @@ export async function getRelatedBlogPosts(args: {
     orderBy: { publishedAt: 'desc' },
     take: limit,
     select: {
+      id: true,
       title: true,
       slug: true,
       excerpt: true,
@@ -42,6 +44,41 @@ export async function getRelatedBlogPosts(args: {
       category: { select: { name: true, slug: true } },
     },
   })
+
+  if (sameCategory.length >= limit) return sameCategory.map(stripId)
+
+  const fallback = await db.blogPost.findMany({
+    where: {
+      status: 'published',
+      id: { notIn: [args.postId, ...sameCategory.map((p) => p.id)] },
+    },
+    orderBy: { publishedAt: 'desc' },
+    take: limit - sameCategory.length,
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      excerpt: true,
+      coverImage: true,
+      publishedAt: true,
+      category: { select: { name: true, slug: true } },
+    },
+  })
+
+  return sameCategory.map(stripId).concat(fallback.map(stripId))
+}
+
+function stripId(post: {
+  id: string
+  title: string
+  slug: string
+  excerpt: string | null
+  coverImage: string | null
+  publishedAt: Date | null
+  category: { name: string; slug: string } | null
+}): RelatedBlogPost {
+  const { id: _id, ...rest } = post
+  return rest
 }
 
 export async function getBlogSidebarListings(blogCategorySlug: string | undefined, limit = 4): Promise<ListingLink[]> {

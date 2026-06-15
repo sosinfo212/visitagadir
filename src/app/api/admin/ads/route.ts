@@ -12,6 +12,8 @@ const DEFAULT_PLACEMENTS = [
   { name: 'Article Inline', location: 'article_inline', slotId: '6789012345', format: 'fluid', adType: 'adsense', description: 'Inline ad within listing detail content', position: 6 },
   { name: 'Blog Content Inline', location: 'blog_content_inline', slotId: '8901234567', format: 'fluid', adType: 'adsense', description: 'In-article ads injected inside blog post body', position: 7 },
   { name: 'Sidebar Rectangle', location: 'sidebar_rectangle', slotId: '7890123456', format: 'rectangle', adType: 'adsense', description: 'Sidebar ad (300x250) on listing and blog pages', position: 8 },
+  { name: 'Blog List Sidebar', location: 'blog_list_sidebar', slotId: '9012345678', format: 'rectangle', adType: 'adsense', description: 'Sidebar ad (300x250) on blog index and category pages', position: 9 },
+  { name: 'Blog List Feed', location: 'blog_list_feed', slotId: '0123456789', format: 'fluid', adType: 'adsense', description: 'In-feed ad between blog post cards on archive pages', position: 10 },
 ]
 
 export async function GET() {

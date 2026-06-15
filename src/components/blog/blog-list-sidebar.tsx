@@ -4,46 +4,53 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DynamicAdSlot } from '@/components/dynamic-ad-slot'
 import { LISTING_DEFAULT_IMAGE } from '@/lib/listing-images'
-import type { RelatedBlogPost } from '@/lib/blog/blog-post-sidebar-data'
-import { blogPostPath, categoryPath, listingPath } from '@/lib/seo/url'
+import type { BlogCategoryNavItem, BlogPostCardData } from '@/lib/blog/blog-list-data'
 import type { ListingLink } from '@/lib/seo/internal-linking'
+import { blogPostPath, categoryPath, listingPath } from '@/lib/seo/url'
+import { BlogCategoryNav } from '@/components/blog/blog-category-nav'
 
 function formatDate(d: Date | null) {
   if (!d) return ''
   return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
-interface BlogPostRightSidebarProps {
-  relatedPosts: RelatedBlogPost[]
+interface BlogListSidebarProps {
+  categories: BlogCategoryNavItem[]
+  popularPosts: BlogPostCardData[]
   listings: ListingLink[]
-  listingsHeading: string
+  activeCategorySlug?: string | null
 }
 
-export function BlogPostRightSidebar({
-  relatedPosts,
+export function BlogListSidebar({
+  categories,
+  popularPosts,
   listings,
-  listingsHeading,
-}: BlogPostRightSidebarProps) {
+  activeCategorySlug,
+}: BlogListSidebarProps) {
   return (
     <div className="space-y-6">
-      <DynamicAdSlot location="sidebar_rectangle" lazy className="min-h-[250px] rounded-xl overflow-hidden" />
+      <DynamicAdSlot
+        location="blog_list_sidebar"
+        lazy
+        className="min-h-[250px] rounded-xl overflow-hidden"
+      />
 
-      {relatedPosts.length > 0 && (
+      {popularPosts.length > 0 && (
         <Card className="shadow-sm">
           <CardHeader className="pb-3 pt-4 px-4">
-            <CardTitle className="text-sm font-semibold">Related articles</CardTitle>
+            <CardTitle className="text-sm font-semibold">Popular articles</CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4 space-y-4">
-            {relatedPosts.map((post) => (
+            {popularPosts.map((post) => (
               <Link
-                key={post.slug}
+                key={post.id}
                 href={blogPostPath(post.slug)}
                 className="group flex gap-3 rounded-xl hover:bg-muted/40 p-2 -mx-2 transition-colors"
               >
                 <div className="w-16 h-16 shrink-0 rounded-lg overflow-hidden bg-gray-100">
                   {post.coverImage ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={post.coverImage} alt="" className="w-full h-full object-cover" />
+                    <img src={post.coverImage} alt="" className="w-full h-full object-cover" loading="lazy" />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-orange-100 to-teal-100" />
                   )}
@@ -65,12 +72,27 @@ export function BlogPostRightSidebar({
         </Card>
       )}
 
+      {categories.length > 0 && (
+        <Card className="shadow-sm">
+          <CardHeader className="pb-3 pt-4 px-4">
+            <CardTitle className="text-sm font-semibold">Categories</CardTitle>
+          </CardHeader>
+          <CardContent className="px-2 pb-4">
+            <BlogCategoryNav
+              categories={categories}
+              activeCategorySlug={activeCategorySlug}
+              variant="sidebar"
+            />
+          </CardContent>
+        </Card>
+      )}
+
       {listings.length > 0 && (
         <Card className="shadow-sm">
           <CardHeader className="pb-3 pt-4 px-4">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
               <MapPin className="h-4 w-4 text-teal-600" />
-              {listingsHeading}
+              Featured in Agadir
             </CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4 space-y-3">
@@ -86,6 +108,7 @@ export function BlogPostRightSidebar({
                     src={listing.image ?? LISTING_DEFAULT_IMAGE}
                     alt=""
                     className="w-full h-full object-cover"
+                    loading="lazy"
                   />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -104,7 +127,7 @@ export function BlogPostRightSidebar({
               href={listings[0] ? categoryPath(listings[0].categorySlug) : '/'}
               className="inline-flex items-center gap-1 text-xs font-medium text-orange-600 hover:text-orange-700 pt-1"
             >
-              Browse more in directory
+              Browse directory
               <ChevronRight className="h-3.5 w-3.5" />
             </Link>
           </CardContent>
@@ -133,7 +156,6 @@ export function BlogPostRightSidebar({
           </Button>
         </CardContent>
       </Card>
-
     </div>
   )
 }

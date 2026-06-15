@@ -61,6 +61,8 @@ const locationLabels: Record<string, string> = {
   article_inline: 'Article Inline',
   blog_content_inline: 'Blog Content Inline',
   sidebar_rectangle: 'Sidebar Rectangle',
+  blog_list_sidebar: 'Blog List Sidebar',
+  blog_list_feed: 'Blog List Feed',
 }
 
 function formatLabel(format: string) {

@@ -1,50 +1,59 @@
-import Link from 'next/link'
 import type { Metadata } from 'next'
-import { ArrowLeft, Calendar, FileText, User } from 'lucide-react'
-import { db } from '@/lib/db'
+import { ensureDefaultBlogCategories } from '@/lib/blog/ensure-categories'
+import {
+  getBlogCategoriesWithCounts,
+  getBlogListSidebarData,
+  getPaginatedBlogPosts,
+} from '@/lib/blog/blog-list-data'
+import { buildBlogListUrl } from '@/lib/blog/pagination'
 import { getSeoSettings } from '@/lib/seo/repository'
 import { buildMetadata } from '@/lib/seo/metadata'
-import { blogCategoryPath, blogPath } from '@/lib/seo/url'
-import { ensureDefaultBlogCategories } from '@/lib/blog/ensure-categories'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { blogPath } from '@/lib/seo/url'
+import { BlogCategoryNav } from '@/components/blog/blog-category-nav'
+import { BlogListSidebar } from '@/components/blog/blog-list-sidebar'
+import { BlogPagination } from '@/components/blog/blog-pagination'
+import { BlogPostList } from '@/components/blog/blog-post-list'
 
-export async function generateMetadata(): Promise<Metadata> {
+export const revalidate = 3600
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string; page?: string }>
+}): Promise<Metadata> {
+  const { category: categorySlug, page: pageParam } = await searchParams
   const seo = await getSeoSettings()
-  return buildMetadata(seo, {
-    title: 'Blog — Agadir Travel & Local Guides',
-    description: 'Tips, guides, and stories about Agadir — beaches, restaurants, culture, and things to do in Morocco.',
-    path: blogPath(),
+  const page = Number(pageParam || 1)
+
+  const title = categorySlug
+    ? `Blog — ${categorySlug.replace(/-/g, ' ')}`
+    : page > 1
+      ? `Blog — Page ${page}`
+      : 'Blog — Agadir Travel & Local Guides'
+
+  const metadata = buildMetadata(seo, {
+    title,
+    description:
+      'Tips, guides, and stories about Agadir — beaches, restaurants, culture, and things to do in Morocco.',
+    path: buildBlogListUrl(blogPath(), page, { category: categorySlug }),
     ogType: 'website',
   })
-}
 
-function formatDate(d: Date | null) {
-  if (!d) return ''
-  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+  return metadata
 }
 
 interface BlogPageProps {
-  searchParams: Promise<{ category?: string }>
+  searchParams: Promise<{ category?: string; page?: string }>
 }
 
 export default async function BlogPage({ searchParams }: BlogPageProps) {
   await ensureDefaultBlogCategories()
-  const { category: categorySlug } = await searchParams
+  const { category: categorySlug, page: pageParam } = await searchParams
 
-  const [categories, posts] = await Promise.all([
-    db.blogCategory.findMany({ orderBy: { name: 'asc' } }),
-    db.blogPost.findMany({
-      where: {
-        status: 'published',
-        ...(categorySlug
-          ? { category: { slug: categorySlug } }
-          : {}),
-      },
-      orderBy: { publishedAt: 'desc' },
-      include: { category: { select: { name: true, slug: true } } },
-    }),
+  const [{ posts, total, page, totalPages }, categories, sidebar] = await Promise.all([
+    getPaginatedBlogPosts({ page: pageParam, categorySlug }),
+    getBlogCategoriesWithCounts(),
+    getBlogListSidebarData(),
   ])
 
   const activeCategory = categorySlug
@@ -53,96 +62,55 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10">
-        <div className="mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
-            {activeCategory ? activeCategory.name : 'Agadir Blog'}
-          </h1>
-          <p className="text-muted-foreground text-lg">
-            {activeCategory?.description || 'Guides, tips, and local insights for visitors and residents.'}
-          </p>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] gap-8 lg:gap-10 items-start">
+          <div className="min-w-0">
+            <div className="mb-8">
+              <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
+                {activeCategory ? activeCategory.name : 'Agadir Blog'}
+              </h1>
+              <p className="text-muted-foreground text-lg">
+                {activeCategory?.description ||
+                  'Guides, tips, and local insights for visitors and residents.'}
+              </p>
+              {total > 0 && (
+                <p className="text-sm text-muted-foreground mt-2">
+                  {total} article{total === 1 ? '' : 's'}
+                  {totalPages > 1 ? ` · Page ${page} of ${totalPages}` : ''}
+                </p>
+              )}
+            </div>
+
+            <BlogCategoryNav categories={categories} activeCategorySlug={categorySlug} />
+
+            <BlogPostList posts={posts} />
+
+            <BlogPagination
+              basePath={blogPath()}
+              page={page}
+              totalPages={totalPages}
+              query={{ category: categorySlug }}
+            />
+          </div>
+
+          <aside className="hidden lg:block sticky top-24 self-start">
+            <BlogListSidebar
+              categories={categories}
+              popularPosts={sidebar.popularPosts}
+              listings={sidebar.listings}
+              activeCategorySlug={categorySlug}
+            />
+          </aside>
         </div>
 
-        {categories.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-8">
-            <Link href={blogPath()}>
-              <Badge variant={!categorySlug ? 'default' : 'outline'} className="cursor-pointer">
-                All
-              </Badge>
-            </Link>
-            {categories.map((cat) => (
-              <Link key={cat.id} href={blogCategoryPath(cat.slug)}>
-                <Badge
-                  variant={categorySlug === cat.slug ? 'default' : 'outline'}
-                  className="cursor-pointer"
-                >
-                  {cat.name}
-                </Badge>
-              </Link>
-            ))}
-          </div>
-        )}
-
-        {posts.length === 0 ? (
-          <p className="text-center text-muted-foreground py-16">No posts published yet. Check back soon.</p>
-        ) : (
-          <div className="space-y-6">
-            {posts.map((post) => (
-              <Card key={post.id} className="overflow-hidden hover:shadow-md transition-shadow">
-                <CardContent className="p-0">
-                  <div className="block sm:flex">
-                    <Link href={`/blog/${post.slug}`} className="sm:w-64 shrink-0 block">
-                      <div className="aspect-[16/10] sm:aspect-auto sm:min-h-[180px] bg-gradient-to-br from-orange-100 to-amber-50">
-                        {post.coverImage ? (
-                          <img
-                            src={post.coverImage}
-                            alt={post.title}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full min-h-[160px] flex items-center justify-center text-orange-300">
-                            <FileText className="h-12 w-12" />
-                          </div>
-                        )}
-                      </div>
-                    </Link>
-                    <div className="p-6 flex-1">
-                      {post.category && (
-                        <Link href={blogCategoryPath(post.category.slug)} className="inline-block mb-2">
-                          <Badge variant="secondary" className="font-normal hover:bg-secondary/80">
-                            {post.category.name}
-                          </Badge>
-                        </Link>
-                      )}
-                      <Link href={`/blog/${post.slug}`}>
-                        <h2 className="text-xl font-semibold text-gray-900 hover:text-orange-600 transition-colors mb-2">
-                          {post.title}
-                        </h2>
-                      </Link>
-                      {post.excerpt && (
-                        <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3 mb-4">
-                          {post.excerpt}
-                        </p>
-                      )}
-                      <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <User className="h-3.5 w-3.5" />
-                          {post.authorName}
-                        </span>
-                        {post.publishedAt && (
-                          <span className="flex items-center gap-1">
-                            <Calendar className="h-3.5 w-3.5" />
-                            {formatDate(post.publishedAt)}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+        <div className="lg:hidden mt-10">
+          <BlogListSidebar
+            categories={categories}
+            popularPosts={sidebar.popularPosts}
+            listings={sidebar.listings}
+            activeCategorySlug={categorySlug}
+          />
+        </div>
       </main>
     </div>
   )

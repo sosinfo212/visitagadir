@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface AdConfig {
   adsEnabled: boolean
@@ -103,8 +103,18 @@ function AdSenseSlot({
   )
 }
 
-export function DynamicAdSlot({ location, className = '' }: { location: string; className?: string }) {
+export function DynamicAdSlot({
+  location,
+  className = '',
+  lazy = false,
+}: {
+  location: string
+  className?: string
+  lazy?: boolean
+}) {
   const [config, setConfig] = useState<AdConfig | null>(null)
+  const [visible, setVisible] = useState(!lazy)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     fetch('/api/ads')
@@ -112,6 +122,28 @@ export function DynamicAdSlot({ location, className = '' }: { location: string; 
       .then((data) => setConfig(data))
       .catch(() => setConfig(null))
   }, [])
+
+  useEffect(() => {
+    if (!lazy || visible) return
+    const node = containerRef.current
+    if (!node) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setVisible(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: '200px 0px' },
+    )
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [lazy, visible])
+
+  if (!visible) {
+    return <div ref={containerRef} className={className} aria-hidden="true" />
+  }
 
   if (!config) return null
   if (!config.adsEnabled) return null
