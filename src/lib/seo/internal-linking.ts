@@ -217,3 +217,26 @@ function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): nu
     Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2
   return 2 * R * Math.asin(Math.sqrt(a))
 }
+
+/** Keep sidebar listing blocks unique — priority: category → city → nearby. */
+export function dedupeListingSidebarSections(sections: {
+  related: ListingLink[]
+  sameCity: ListingLink[]
+  nearby: ListingLink[]
+}): { related: ListingLink[]; sameCity: ListingLink[]; nearby: ListingLink[] } {
+  const seen = new Set<string>()
+  const unique = (items: ListingLink[]) => {
+    const out: ListingLink[] = []
+    for (const item of items) {
+      if (seen.has(item.slug)) continue
+      seen.add(item.slug)
+      out.push(item)
+    }
+    return out
+  }
+  return {
+    related: unique(sections.related),
+    sameCity: unique(sections.sameCity),
+    nearby: unique(sections.nearby),
+  }
+}

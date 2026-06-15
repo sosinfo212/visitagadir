@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 
 import Home from './home-client'
 import { HomepageInternalLinks } from '@/components/seo/homepage-internal-links'
@@ -23,7 +24,9 @@ export default async function HomePage() {
   return (
     <>
       <h1 className="sr-only">Agadir Directory — Your Complete Guide to Agadir, Morocco</h1>
-      <Home initialData={initialData} />
+      <Suspense fallback={<div className="min-h-[50vh] flex items-center justify-center text-muted-foreground">Loading...</div>}>
+        <Home initialData={initialData} />
+      </Suspense>
       <HomepageInternalLinks />
     </>
   )

@@ -42,6 +42,7 @@ import {
   getRelatedCategories,
   getCitiesWithCounts,
   getListingsInCity,
+  dedupeListingSidebarSections,
   type CategoryLink,
   type ListingLink,
 } from './internal-linking'
@@ -77,7 +78,7 @@ export async function getListingSeoBundle(slug: string) {
   })
   if (!listing || !listing.published) return null
 
-  const [seo, schemaCfg, related, sameCity, nearby] = await Promise.all([
+  const [seo, schemaCfg, relatedRaw, sameCityRaw, nearbyRaw] = await Promise.all([
     getSeoSettings(),
     getSchemaSettings(),
     getRelatedInCategory({ categoryId: listing.categoryId, excludeListingId: listing.id, limit: 6 }),
@@ -90,6 +91,12 @@ export async function getListingSeoBundle(slug: string) {
       limit: 6,
     }),
   ])
+
+  const { related, sameCity, nearby } = dedupeListingSidebarSections({
+    related: relatedRaw,
+    sameCity: sameCityRaw,
+    nearby: nearbyRaw,
+  })
 
   const images = getListingDisplayImages(listing.image, listing.gallery)
   const breadcrumbs = [

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Search, MapPin, Star, Phone, Globe, Mail, ChevronRight, ChevronLeft,
@@ -900,6 +900,7 @@ export default function Home({
   initialData?: HomepageInitialData
 }) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [categories, setCategories] = useState<CategoryWithCount[]>(initialData?.categories ?? [])
   const [listings, setListings] = useState<Listing[]>([])
   const [featuredListings, setFeaturedListings] = useState<Listing[]>(initialData?.featuredListings ?? [])
@@ -1016,10 +1017,12 @@ export default function Home({
   const handleSearch = () => {
     if (activeCategory) {
       fetchListings(activeCategory, searchQuery)
+      setView('category')
     } else {
       fetchListings(null, searchQuery)
-      if (searchQuery) {
+      if (searchQuery.trim()) {
         setView('category')
+        router.push(`/?search=${encodeURIComponent(searchQuery.trim())}`)
       }
     }
   }
@@ -1124,17 +1127,15 @@ export default function Home({
 
   const activeCategoryData = useMemo(() => categories.find(c => c.slug === activeCategory), [categories, activeCategory])
 
+  const urlSearch = searchParams.get('search')?.trim() ?? ''
+
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const search = params.get('search')?.trim()
-    if (!search) return
-    setSearchQuery(search)
+    if (!urlSearch) return
+    setSearchQuery(urlSearch)
     setView('category')
-    fetchListings(null, search)
-    params.delete('search')
-    const next = params.toString() ? `/?${params.toString()}` : '/'
-    window.history.replaceState({}, '', next)
-  }, [fetchListings])
+    setActiveCategory(null)
+    fetchListings(null, urlSearch)
+  }, [urlSearch, fetchListings])
 
   // Loading skeleton
   if (isLoading && view === 'home' && categories.length === 0) {
@@ -1239,7 +1240,6 @@ export default function Home({
                               alt={listing.name}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             />
-                            <div className={`absolute inset-0 bg-gradient-to-t ${categoryColors[listing.category.slug] || 'from-gray-400 to-gray-500'} opacity-30`} />
                             {listing.featured && (
                               <Badge className="absolute top-2.5 right-2.5 bg-amber-100 text-amber-700 border-amber-200 shadow-sm">
                                 <Award className="h-3 w-3 mr-1" />Featured
@@ -1414,7 +1414,7 @@ export default function Home({
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3 }}
             >
-              {/* Category Header */}
+              {/* Category / Search Header */}
               <div className={`bg-gradient-to-r ${categoryColors[activeCategory || ''] || 'from-orange-500 to-teal-500'} text-white`}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
                   <Button
@@ -1428,18 +1428,22 @@ export default function Home({
                   </Button>
                   <div className="flex items-center gap-4">
                     <div className="p-4 bg-white/20 rounded-2xl">
-                      {getCategoryIcon(activeCategoryData?.icon)}
+                      {activeCategoryData ? getCategoryIcon(activeCategoryData.icon) : <Search className="h-8 w-8" />}
                     </div>
                     <div>
-                      <h2 className="text-3xl sm:text-4xl font-bold">{activeCategoryData?.name}</h2>
-                      <p className="text-white/80 mt-1">{activeCategoryData?.description}</p>
+                      <h2 className="text-3xl sm:text-4xl font-bold">
+                        {activeCategoryData?.name || (searchQuery ? `Search: "${searchQuery}"` : 'All Listings')}
+                      </h2>
+                      <p className="text-white/80 mt-1">
+                        {activeCategoryData?.description || (searchQuery ? 'Matching businesses across Agadir' : 'Browse all listings')}
+                      </p>
                     </div>
                   </div>
                   <div className="mt-6 flex items-center gap-3">
                     <div className="relative flex-1 max-w-md">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
                       <Input
-                        placeholder={`Search in ${activeCategoryData?.name}...`}
+                        placeholder={activeCategoryData ? `Search in ${activeCategoryData.name}...` : 'Refine your search...'}
                         className="pl-9 bg-white/20 border-white/30 text-white placeholder:text-white/60 h-10"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -1450,8 +1454,8 @@ export default function Home({
                       variant="secondary"
                       onClick={handleSearch}
                     >
-                      <Filter className="h-4 w-4 mr-1.5" />
-                      Filter
+                      <Search className="h-4 w-4 mr-1.5" />
+                      Search
                     </Button>
                   </div>
                 </div>
@@ -1498,7 +1502,6 @@ export default function Home({
                                   alt={listing.name}
                                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                 />
-                                <div className={`absolute inset-0 bg-gradient-to-r ${categoryColors[listing.category.slug] || 'from-gray-400 to-gray-500'} opacity-20`} />
                               </div>
                               <div className="flex-1 p-4 sm:p-5">
                                 <div className="flex items-start justify-between gap-3">
@@ -1588,35 +1591,34 @@ export default function Home({
                   alt={selectedListing.name}
                   className="absolute inset-0 w-full h-full object-cover"
                 />
-                <div className={`absolute inset-0 bg-gradient-to-t ${categoryColors[selectedListing.category.slug] || 'from-orange-500 to-teal-500'} opacity-60`} />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+              </div>
+
+              <div className="bg-white border-b">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-white/80 hover:text-white hover:bg-white/10 mb-3"
+                    className="text-muted-foreground hover:text-orange-600 mb-3 -ml-2"
                     onClick={handleBackToCategory}
                   >
                     <ArrowLeft className="h-4 w-4 mr-1" />
                     Back to {selectedListing.category.name}
                   </Button>
                   <div className="flex items-center gap-3 mb-2">
-                    <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm">
-                      {selectedListing.category.name}
-                    </Badge>
+                    <Badge variant="secondary">{selectedListing.category.name}</Badge>
                     {selectedListing.featured && (
-                      <Badge className="bg-amber-400 text-amber-900 border-0">
+                      <Badge className="bg-amber-100 text-amber-800 border-amber-200">
                         <Award className="h-3 w-3 mr-1" />Featured
                       </Badge>
                     )}
                   </div>
-                  <h2 className="text-3xl sm:text-4xl font-bold mb-2 text-white">{selectedListing.name}</h2>
+                  <h2 className="text-3xl sm:text-4xl font-bold mb-2 text-gray-900">{selectedListing.name}</h2>
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-1">
                       <StarRating rating={selectedListing.rating} size="md" />
-                      <span className="font-semibold ml-1 text-white">{selectedListing.rating}</span>
+                      <span className="font-semibold ml-1">{selectedListing.rating}</span>
                     </div>
-                    <span className="text-white/70">({selectedListing.reviewCount} reviews)</span>
+                    <span className="text-muted-foreground">({selectedListing.reviewCount} reviews)</span>
                   </div>
                 </div>
               </div>

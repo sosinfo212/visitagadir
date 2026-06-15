@@ -5,6 +5,7 @@ import { categoryPath, listingPath } from '@/lib/seo/url'
 import { BreadcrumbNav } from '@/components/seo/breadcrumb-nav'
 import { ListingReviewForm } from '@/components/listing/listing-review-form'
 import { listingWebsiteHref } from '@/lib/listing-contact'
+import { LISTING_DEFAULT_IMAGE } from '@/lib/listing-images'
 import type { getListingSeoBundle } from '@/lib/seo/service'
 
 type ListingBundle = NonNullable<Awaited<ReturnType<typeof getListingSeoBundle>>>
@@ -26,14 +27,27 @@ function RelatedList({ title, items }: { title: string; items: ListingBundle['re
   if (items.length === 0) return null
   return (
     <div className="bg-white border rounded-xl p-4">
-      <h3 className="text-sm font-semibold text-gray-900 mb-2">{title}</h3>
-      <ul className="space-y-2 text-sm">
+      <h3 className="text-sm font-semibold text-gray-900 mb-3">{title}</h3>
+      <ul className="space-y-3">
         {items.map((item) => (
           <li key={item.slug}>
-            <Link href={listingPath(item.slug)} className="hover:text-orange-600">
-              {item.name}
+            <Link
+              href={listingPath(item.slug)}
+              className="flex items-center gap-3 group"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={item.image || LISTING_DEFAULT_IMAGE}
+                alt={item.name}
+                className="h-12 w-12 rounded-lg object-cover shrink-0 bg-gray-100"
+              />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate group-hover:text-orange-600 transition-colors">
+                  {item.name}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">{item.categoryName}</p>
+              </div>
             </Link>
-            <span className="text-muted-foreground text-xs block">{item.categoryName}</span>
           </li>
         ))}
       </ul>
@@ -56,20 +70,22 @@ export function ListingDetailPage({ bundle }: { bundle: ListingBundle }) {
           alt={listing.name}
           className="absolute inset-0 w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+      </div>
+
+      <div className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <Link
             href={categoryPath(listing.category.slug)}
-            className="inline-flex items-center text-white/80 hover:text-white text-sm mb-3"
+            className="inline-flex items-center text-muted-foreground hover:text-orange-600 text-sm mb-3"
           >
             ← Back to {listing.category.name}
           </Link>
-          <p className="text-white/90 text-sm mb-1">{listing.category.name}</p>
-          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">{listing.name}</h1>
-          <div className="flex items-center gap-3 text-white">
+          <p className="text-sm text-muted-foreground mb-1">{listing.category.name}</p>
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">{listing.name}</h1>
+          <div className="flex items-center gap-3">
             <StarDisplay rating={rating} />
             <span className="font-semibold">{rating.toFixed(1)}</span>
-            <span className="text-white/70">({reviewCount} reviews)</span>
+            <span className="text-muted-foreground">({reviewCount} reviews)</span>
           </div>
         </div>
       </div>

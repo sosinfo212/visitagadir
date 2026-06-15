@@ -1,8 +1,8 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -24,8 +24,27 @@ import { AddBusinessModal, type CategoryWithCount } from '@/components/add-busin
 const businessLoginUrl = '/login?callbackUrl=%2Fmy-listings'
 
 export function SiteHeader() {
+  return (
+    <Suspense fallback={<SiteHeaderFallback />}>
+      <SiteHeaderInner />
+    </Suspense>
+  )
+}
+
+function SiteHeaderFallback() {
+  return (
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center">
+        <div className="h-8 w-32 bg-muted rounded animate-pulse" />
+      </div>
+    </header>
+  )
+}
+
+function SiteHeaderInner() {
   const router = useRouter()
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const { data: session, status } = useSession()
 
   const [categories, setCategories] = useState<CategoryWithCount[]>([])
@@ -77,6 +96,13 @@ export function SiteHeader() {
     })
   }, [])
 
+  useEffect(() => {
+    const q = searchParams.get('search')?.trim() ?? ''
+    if (pathname === '/' && q) {
+      setSearchQuery(q)
+    }
+  }, [pathname, searchParams])
+
   const handleListBusiness = useCallback(() => {
     if (status === 'loading') return
     if (!session?.user) {
@@ -111,7 +137,11 @@ export function SiteHeader() {
   const handleSearch = () => {
     const q = searchQuery.trim()
     setMobileMenuOpen(false)
-    router.push(q ? `/?search=${encodeURIComponent(q)}` : '/')
+    if (!q) {
+      router.push('/')
+      return
+    }
+    router.push(`/?search=${encodeURIComponent(q)}`)
   }
 
   return (
@@ -206,15 +236,20 @@ export function SiteHeader() {
                 </AnimatePresence>
               </div>
 
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search Agadir..."
-                  className="pl-9 h-9 rounded-lg"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                />
+              <div className="relative flex-1 flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search Agadir..."
+                    className="pl-9 h-9 rounded-lg"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  />
+                </div>
+                <Button type="button" size="sm" className="h-9 shrink-0" onClick={handleSearch}>
+                  Search
+                </Button>
               </div>
             </div>
 
@@ -290,6 +325,9 @@ export function SiteHeader() {
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               />
             </div>
+            <Button type="button" size="sm" className="h-9 shrink-0" onClick={handleSearch}>
+              Go
+            </Button>
           </div>
         </div>
 
