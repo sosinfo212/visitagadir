@@ -11,7 +11,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 
 import { db } from '@/lib/db'
-import { buildImagesArray } from '@/lib/listing-images'
+import { getListingDisplayImages } from '@/lib/listing-images'
 import { getSeoSettings, getSchemaSettings } from '@/lib/seo/repository'
 import { buildMetadata } from '@/lib/seo/metadata'
 import {
@@ -68,7 +68,7 @@ export default async function CategoryPage({ params }: PageProps) {
   })
   const listingsWithImage = fullListings.map(l => ({
     ...l,
-    images: buildImagesArray(l.image, l.gallery),
+    images: getListingDisplayImages(l.image, l.gallery),
   }))
 
   const breadcrumbs = [
@@ -113,7 +113,7 @@ export default async function CategoryPage({ params }: PageProps) {
                         <div className="relative h-36 bg-gray-100">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
-                            src={l.images[0] || '/listings/default.jpg'}
+                            src={l.images[0]}
                             alt={l.name}
                             className="absolute inset-0 w-full h-full object-cover"
                           />

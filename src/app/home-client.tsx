@@ -12,6 +12,7 @@ import {
   ChevronDown, CheckCircle2, Building2, Send, Newspaper, Calendar, LogIn,
 } from 'lucide-react'
 import { isHtmlContent, stripHtml } from '@/lib/blog/html'
+import { LISTING_DEFAULT_IMAGE } from '@/lib/listing-images'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -35,7 +36,7 @@ import {
 } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { MultiImageInput } from '@/components/multi-image-input'
-import { categoryBgColors, categoryIconMap as iconMap } from '@/lib/category-icons'
+import { categoryBgColors, getCategoryIcon } from '@/lib/category-icons'
 import { DynamicAdSlot } from '@/components/dynamic-ad-slot'
 import type { HomepageInitialData } from '@/lib/homepage-data'
 
@@ -194,7 +195,11 @@ function ScrollToTop() {
 function getListingImages(listing: Listing): string[] {
   if (Array.isArray(listing.images) && listing.images.length > 0) return listing.images
   if (listing.image) return [listing.image]
-  return []
+  return [LISTING_DEFAULT_IMAGE]
+}
+
+function getListingCardImage(listing: Listing): string {
+  return getListingImages(listing)[0]
 }
 
 // Card-styled "Photos" gallery for the listing detail page. Rendered above
@@ -225,7 +230,7 @@ function ListingPhotosGallery({ listing }: { listing: Listing }) {
     touchStartX.current = null
   }
 
-  // Don't show the card at all when there are no photos.
+  // Show the gallery card even when only the default placeholder is available.
   if (images.length === 0) return null
 
   const currentSrc = images[idx]
@@ -793,7 +798,7 @@ function AnimatedHeroSection({
                 initial={{ opacity: 0, scale: 0.8 }}
                 viewport={{ once: true }}
               >
-                <span className="opacity-70">{iconMap[cat.icon]}</span>
+                <span className="opacity-70">{getCategoryIcon(cat.icon)}</span>
                 <span className="hidden sm:inline text-xs">{cat.name.split(' & ')[0]}</span>
               </motion.button>
             ))}
@@ -1191,7 +1196,7 @@ export default function Home({
                       }`}
                     >
                       <div className={`inline-flex p-2.5 rounded-xl bg-gradient-to-br ${categoryColors[cat.slug] || 'from-gray-400 to-gray-500'} text-white mb-3 shadow-sm`}>
-                        {iconMap[cat.icon]}
+                        {getCategoryIcon(cat.icon)}
                       </div>
                       <h4 className="font-semibold text-sm sm:text-base leading-tight mb-1">{cat.name}</h4>
                       <p className="text-xs text-muted-foreground">{cat.listingCount} listings</p>
@@ -1229,7 +1234,7 @@ export default function Home({
                           {/* Image header */}
                           <div className="relative h-40 overflow-hidden">
                             <img
-                              src={listing.image || '/listings/default.jpg'}
+                              src={getListingCardImage(listing)}
                               alt={listing.name}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             />
@@ -1422,7 +1427,7 @@ export default function Home({
                   </Button>
                   <div className="flex items-center gap-4">
                     <div className="p-4 bg-white/20 rounded-2xl">
-                      {iconMap[activeCategoryData?.icon || '']}
+                      {getCategoryIcon(activeCategoryData?.icon)}
                     </div>
                     <div>
                       <h2 className="text-3xl sm:text-4xl font-bold">{activeCategoryData?.name}</h2>
@@ -1488,7 +1493,7 @@ export default function Home({
                               {/* Thumbnail image */}
                               <div className="relative sm:w-32 h-32 sm:h-auto shrink-0 overflow-hidden">
                                 <img
-                                  src={listing.image || '/listings/default.jpg'}
+                                  src={getListingCardImage(listing)}
                                   alt={listing.name}
                                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                 />
@@ -1578,7 +1583,7 @@ export default function Home({
               <div className="relative h-56 sm:h-72 md:h-80 overflow-hidden bg-gray-200">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={selectedListing.image || '/listings/default.jpg'}
+                  src={getListingCardImage(selectedListing)}
                   alt={selectedListing.name}
                   className="absolute inset-0 w-full h-full object-cover"
                 />
@@ -1779,7 +1784,7 @@ export default function Home({
                                 className="flex items-center gap-3 w-full text-left group"
                               >
                                 <img
-                                  src={listing.image || '/listings/default.jpg'}
+                                  src={getListingCardImage(listing)}
                                   alt={listing.name}
                                   className="h-12 w-12 rounded-lg object-cover shrink-0"
                                 />
@@ -1814,7 +1819,7 @@ export default function Home({
                                 onClick={() => handleCategoryClick(cat.slug)}
                                 className="flex items-center gap-2 w-full text-sm text-muted-foreground hover:text-foreground py-1.5 transition-colors"
                               >
-                                <span>{iconMap[cat.icon]}</span>
+                                <span>{getCategoryIcon(cat.icon)}</span>
                                 <span>{cat.name}</span>
                                 <ChevronRight className="h-3.5 w-3.5 ml-auto" />
                               </button>

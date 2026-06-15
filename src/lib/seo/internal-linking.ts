@@ -19,6 +19,7 @@
  */
 
 import { db } from '@/lib/db'
+import { getListingFeaturedImage } from '@/lib/listing-images'
 import type { Listing, Category } from '@prisma/client'
 
 export interface CategoryLink {
@@ -202,7 +203,7 @@ function mapListing(l: ListingRow): ListingLink {
     categorySlug: l.category.slug,
     featured: l.featured,
     rating: l.rating,
-    image: l.image ?? null,
+    image: getListingFeaturedImage(l.image, l.gallery),
   }
 }
 

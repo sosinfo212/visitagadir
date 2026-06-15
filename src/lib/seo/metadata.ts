@@ -17,7 +17,7 @@
 
 import type { Metadata } from 'next'
 import type { SeoSettings } from '@prisma/client'
-import { ensureAbsolute } from './url'
+import { ensureAbsolute, resolveCanonicalOverride } from './url'
 
 type Robots = string
 
@@ -33,9 +33,13 @@ export interface PageMetaInput {
   noindex?: boolean
 }
 
-function applyTitleTemplate(template: string, pageTitle: string): string {
-  if (!template.includes('%s')) return pageTitle
-  return template.replace('%s', pageTitle)
+function applyTitleTemplate(template: string, pageTitle: string, siteName: string): string {
+  let tpl = template
+  if (/testsite/i.test(tpl)) {
+    tpl = `%s · ${siteName}`
+  }
+  if (!tpl.includes('%s')) return pageTitle
+  return tpl.replace('%s', pageTitle)
 }
 
 function nonEmpty(v: string | null | undefined): string | null {
@@ -54,7 +58,7 @@ function splitKeywords(v: string | null | undefined): string[] | undefined {
 export function buildMetadata(seo: SeoSettings, input: PageMetaInput): Metadata {
   const pageTitleRaw = nonEmpty(input.title)
   const finalTitle = pageTitleRaw
-    ? applyTitleTemplate(seo.titleTemplate, pageTitleRaw)
+    ? applyTitleTemplate(seo.titleTemplate, pageTitleRaw, seo.siteName)
     : seo.defaultTitle
 
   const finalDescription = nonEmpty(input.description) ?? seo.defaultDescription
@@ -64,7 +68,8 @@ export function buildMetadata(seo: SeoSettings, input: PageMetaInput): Metadata 
     ? 'noindex,nofollow'
     : (nonEmpty(input.robots) ?? seo.defaultRobots)
 
-  const canonical = nonEmpty(input.canonicalOverride)
+  const canonicalOverride = resolveCanonicalOverride(input.canonicalOverride)
+  const canonical = nonEmpty(canonicalOverride)
     ?? ensureAbsolute(input.path, seo.canonicalDomain || seo.siteUrl)
 
   const ogImage = nonEmpty(input.image) ?? nonEmpty(seo.defaultOgImage)

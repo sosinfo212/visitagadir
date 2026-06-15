@@ -1,3 +1,6 @@
+/** Public fallback when a listing has no featured image or gallery. */
+export const LISTING_DEFAULT_IMAGE = '/listings/default.jpg'
+
 /**
  * Helpers for the listing image model:
  *  - `image`   = single string (featured / cover) - existing column
@@ -20,13 +23,38 @@ export function parseGallery(gallery: string | null | undefined): string[] {
   }
 }
 
+function normalizeImage(image: string | null | undefined): string | null {
+  if (!image) return null
+  const trimmed = image.trim()
+  return trimmed.length > 0 ? trimmed : null
+}
+
 export function buildImagesArray(
   image: string | null | undefined,
   gallery: string | null | undefined,
 ): string[] {
+  const featured = normalizeImage(image)
   const rest = parseGallery(gallery)
-  if (image) return [image, ...rest]
+  if (featured) return [featured, ...rest]
   return rest
+}
+
+/** Featured image for UI/SEO, falling back to the site default placeholder. */
+export function getListingFeaturedImage(
+  image: string | null | undefined,
+  gallery?: string | null | undefined,
+): string {
+  const images = buildImagesArray(image, gallery)
+  return images[0] ?? LISTING_DEFAULT_IMAGE
+}
+
+/** Ordered images for display; uses the default placeholder when none exist. */
+export function getListingDisplayImages(
+  image: string | null | undefined,
+  gallery?: string | null | undefined,
+): string[] {
+  const images = buildImagesArray(image, gallery)
+  return images.length > 0 ? images : [LISTING_DEFAULT_IMAGE]
 }
 
 /**

@@ -44,7 +44,7 @@ export function ListingDetailPage({ bundle }: { bundle: ListingBundle }) {
   const { listing, images, breadcrumbs, related, sameCity, nearby } = bundle
   const rating = listing.rating || 0
   const reviewCount = listing.reviewCount || 0
-  const heroImage = images[0] || '/listings/default.jpg'
+  const heroImage = images[0]
 
   return (
     <main className="min-h-screen bg-gray-50">

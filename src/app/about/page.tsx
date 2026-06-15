@@ -79,7 +79,7 @@ export default function AboutPage() {
             className="relative"
           >
             <div className="rounded-2xl overflow-hidden shadow-2xl">
-              <img src="/listings/beaches-water-sports.jpg" alt="Agadir coastline" className="w-full h-80 object-cover" />
+              <img src="/listings/default.jpg" alt="Agadir coastline" className="w-full h-80 object-cover" />
             </div>
             <div className="absolute -bottom-6 -left-6 bg-white rounded-2xl shadow-xl p-4 flex items-center gap-3">
               <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-orange-500 to-teal-500 flex items-center justify-center text-white">
@@ -257,7 +257,7 @@ export default function AboutPage() {
         {/* Background Image */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: "url('/listings/beaches-water-sports.jpg')" }}
+          style={{ backgroundImage: "url('/listings/default.jpg')" }}
         />
         {/* Dark overlay for text readability */}
         <div className="absolute inset-0 bg-gradient-to-r from-orange-600/85 via-orange-700/80 to-teal-700/85" />

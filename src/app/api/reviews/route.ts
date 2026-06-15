@@ -1,6 +1,7 @@
 import { db } from '@/lib/db'
 import { NextRequest, NextResponse } from 'next/server'
 import { sendNewReviewNotification } from '@/lib/email'
+import { getClientIp, rateLimit } from '@/lib/rate-limit'
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,6 +27,15 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request)
+    const limited = rateLimit(`review:${ip}`, 5, 15 * 60 * 1000)
+    if (!limited.ok) {
+      return NextResponse.json(
+        { error: 'Too many reviews submitted. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(limited.retryAfterSec ?? 60) } },
+      )
+    }
+
     const body = await request.json()
     const { listingId, authorName, rating, comment } = body
 
@@ -49,6 +59,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Comment must be at least 5 characters' }, { status: 400 })
     }
 
+    const listing = await db.listing.findUnique({
+      where: { id: listingId },
+      select: {
+        id: true,
+        published: true,
+        name: true,
+        slug: true,
+        userId: true,
+        user: { select: { email: true, name: true } },
+      },
+    })
+
+    if (!listing || !listing.published) {
+      return NextResponse.json({ error: 'Listing not found' }, { status: 404 })
+    }
+
     // Create the review as NOT approved — needs admin approval
     const review = await db.review.create({
       data: {
@@ -61,17 +87,7 @@ export async function POST(request: NextRequest) {
     })
 
     // Notify listing owner by email (non-blocking)
-    const listing = await db.listing.findUnique({
-      where: { id: listingId },
-      select: {
-        name: true,
-        slug: true,
-        userId: true,
-        user: { select: { email: true, name: true } },
-      },
-    })
-
-    if (listing?.user?.email) {
+    if (listing.user?.email) {
       void sendNewReviewNotification({
         ownerEmail: listing.user.email,
         ownerName: listing.user.name,

@@ -17,7 +17,7 @@ import {
 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { categoryBgColors, categoryIconMap } from '@/lib/category-icons'
+import { categoryBgColors, getCategoryIcon } from '@/lib/category-icons'
 import { categoryPath } from '@/lib/seo/url'
 import { AddBusinessModal, type CategoryWithCount } from '@/components/add-business-modal'
 
@@ -156,7 +156,7 @@ export function SiteHeader() {
                   className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border bg-muted/50 hover:bg-muted transition-colors"
                 >
                   <span className="text-muted-foreground">
-                    {activeCategoryData ? categoryIconMap[activeCategoryData.icon] : <Menu className="h-4 w-4" />}
+                    {activeCategoryData ? getCategoryIcon(activeCategoryData.icon) : <Menu className="h-4 w-4" />}
                   </span>
                   <span className="max-w-[120px] truncate">
                     {activeCategoryData?.name.split(' & ')[0] || 'Categories'}
@@ -193,7 +193,7 @@ export function SiteHeader() {
                                 : 'hover:bg-muted text-foreground'
                             }`}
                           >
-                            <span className="text-muted-foreground">{categoryIconMap[cat.icon]}</span>
+                            <span className="text-muted-foreground">{getCategoryIcon(cat.icon)}</span>
                             <span className="flex-1">{cat.name}</span>
                             <span className="text-xs text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded-full">
                               {cat.listingCount}
@@ -346,7 +346,7 @@ export function SiteHeader() {
                           : categoryBgColors[cat.slug] || 'bg-gray-50 border-gray-200 hover:bg-gray-100'
                       }`}
                     >
-                      <span className="text-muted-foreground">{categoryIconMap[cat.icon]}</span>
+                      <span className="text-muted-foreground">{getCategoryIcon(cat.icon)}</span>
                       <span className="font-medium truncate text-xs">{cat.name}</span>
                     </motion.button>
                   ))}

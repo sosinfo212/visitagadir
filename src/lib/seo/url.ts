@@ -11,6 +11,19 @@ export function ensureAbsolute(url: string, siteUrl: string): string {
   return base + path
 }
 
+/** WordPress imports often store `/job/slug/` canonicals — ignore those. */
+export function resolveCanonicalOverride(
+  override: string | null | undefined,
+): string | null {
+  const trimmed = override?.trim()
+  if (!trimmed) return null
+
+  const legacyJobPath = /\/job\//i.test(trimmed)
+  if (legacyJobPath) return null
+
+  return trimmed
+}
+
 export function categoryPath(slug: string): string {
   return `/category/${encodeURIComponent(slug)}`
 }

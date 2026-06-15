@@ -11,14 +11,21 @@ function getTransport() {
     return null
   }
 
+  const secure = process.env.SMTP_SECURE === 'true' || smtpPort === 465
+
   return nodemailer.createTransport({
     host: smtpHost,
     port: smtpPort,
-    secure: smtpPort === 465,
+    secure,
     auth: {
       user: smtpUser,
       pass: smtpPass,
     },
+    tls: {
+      minVersion: 'TLSv1.2',
+    },
+    connectionTimeout: 15_000,
+    greetingTimeout: 15_000,
   })
 }
 

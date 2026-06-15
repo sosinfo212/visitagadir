@@ -11,6 +11,7 @@ import {
   Compass,
   Home as HomeIcon,
   Sparkles,
+  Building2,
 } from 'lucide-react'
 
 export const categoryIconMap: Record<string, React.ReactNode> = {
@@ -26,6 +27,13 @@ export const categoryIconMap: Record<string, React.ReactNode> = {
   Compass: <Compass className="h-6 w-6" />,
   Home: <HomeIcon className="h-6 w-6" />,
   Sparkles: <Sparkles className="h-6 w-6" />,
+}
+
+const defaultCategoryIcon = <Building2 className="h-6 w-6" />
+
+export function getCategoryIcon(icon: string | null | undefined): React.ReactNode {
+  if (!icon) return defaultCategoryIcon
+  return categoryIconMap[icon] ?? defaultCategoryIcon
 }
 
 export const categoryBgColors: Record<string, string> = {

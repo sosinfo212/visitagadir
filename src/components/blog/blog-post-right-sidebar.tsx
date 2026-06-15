@@ -3,6 +3,7 @@ import { Building2, Calendar, ChevronRight, MapPin, Plus, Star } from 'lucide-re
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DynamicAdSlot } from '@/components/dynamic-ad-slot'
+import { LISTING_DEFAULT_IMAGE } from '@/lib/listing-images'
 import type { RelatedBlogPost } from '@/lib/blog/blog-post-sidebar-data'
 import { blogPostPath, categoryPath, listingPath } from '@/lib/seo/url'
 import type { ListingLink } from '@/lib/seo/internal-linking'
@@ -80,7 +81,7 @@ export function BlogPostRightSidebar({
                 <div className="w-14 h-14 shrink-0 rounded-lg overflow-hidden bg-gray-100">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={listing.image || '/listings/default.jpg'}
+                    src={listing.image ?? LISTING_DEFAULT_IMAGE}
                     alt=""
                     className="w-full h-full object-cover"
                   />

@@ -13,18 +13,35 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { COOKIE_NAME, verifySession } from '@/lib/admin-auth'
 import { findRedirect, incrementRedirectHits } from '@/lib/seo/repository'
 
 export const config = {
   matcher: [
-    // Everything except _next/*, api/*, admin/* and files with extensions.
-    '/((?!_next/|api/|admin/|.*\\.(?:ico|png|jpg|jpeg|gif|webp|svg|css|js|map|txt|xml|webmanifest)$).*)',
+    '/admin/:path*',
+    // Everything except _next/*, api/* and files with extensions.
+    '/((?!_next/|api/|.*\\.(?:ico|png|jpg|jpeg|gif|webp|svg|css|js|map|txt|xml|webmanifest)$).*)',
   ],
 }
 
 export default async function proxy(req: NextRequest) {
+  const path = req.nextUrl.pathname
+
   try {
-    const path = req.nextUrl.pathname
+    if (path.startsWith('/admin') && path !== '/admin/login') {
+      const token = req.cookies.get(COOKIE_NAME)?.value
+      const session = token ? await verifySession(token) : null
+      if (!session) {
+        const loginUrl = new URL('/admin/login', req.url)
+        return NextResponse.redirect(loginUrl)
+      }
+      return NextResponse.next()
+    }
+
+    if (path.startsWith('/admin')) {
+      return NextResponse.next()
+    }
+
     const rule = await findRedirect(path)
     if (!rule || !rule.enabled) return NextResponse.next()
 

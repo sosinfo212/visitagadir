@@ -10,7 +10,7 @@ import type { Metadata } from 'next'
 import type { Category, Listing, SeoSettings } from '@prisma/client'
 
 import { db } from '@/lib/db'
-import { buildImagesArray } from '@/lib/listing-images'
+import { getListingDisplayImages } from '@/lib/listing-images'
 import { cacheInvalidate } from './cache'
 import {
   getSeoSettings,
@@ -91,7 +91,7 @@ export async function getListingSeoBundle(slug: string) {
     }),
   ])
 
-  const images = buildImagesArray(listing.image, listing.gallery)
+  const images = getListingDisplayImages(listing.image, listing.gallery)
   const breadcrumbs = [
     { name: 'Home', url: seo.siteUrl },
     { name: listing.category.name, url: ensureAbsolute(categoryPath(listing.category.slug), seo.siteUrl) },
@@ -109,7 +109,7 @@ export async function getListingSeoBundle(slug: string) {
     title: listing.seoTitle || `${listing.name} — ${listing.category.name} in ${listing.city}`,
     description: listing.metaDescription || listing.description.slice(0, 160),
     keywords: listing.metaKeywords,
-    image: images[0] ?? null,
+    image: images[0],
     path: listingPath(listing.slug),
     canonicalOverride: listing.canonicalUrl,
     ogType: 'website',

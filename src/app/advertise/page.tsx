@@ -24,15 +24,47 @@ export default function AdvertisePage() {
   const [form, setForm] = useState({ name: '', email: '', company: '', message: '' })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  const [error, setError] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError('')
+    if (!form.name || !form.email || !form.message) {
+      setError('Please fill in all required fields.')
+      return
+    }
     setIsSubmitting(true)
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    setIsSuccess(true)
-    setIsSubmitting(false)
-    setForm({ name: '', email: '', company: '', message: '' })
-    setTimeout(() => setIsSuccess(false), 4000)
+    try {
+      const subject = form.company
+        ? `Advertising inquiry from ${form.company}`
+        : 'Advertising inquiry'
+      const message = form.company
+        ? `Company: ${form.company}\n\n${form.message}`
+        : form.message
+
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          subject,
+          message,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || 'Failed to send inquiry. Please try again.')
+        return
+      }
+      setIsSuccess(true)
+      setForm({ name: '', email: '', company: '', message: '' })
+      setTimeout(() => setIsSuccess(false), 4000)
+    } catch {
+      setError('Failed to send inquiry. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -272,6 +304,12 @@ export default function AdvertisePage() {
                   <h2 className="text-2xl font-bold">Ready to Advertise?</h2>
                   <p className="text-muted-foreground mt-2">Fill out the form below and our advertising team will contact you within 24 hours to discuss the best options for your business.</p>
                 </div>
+
+                {error && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 mb-6 text-sm">
+                    {error}
+                  </div>
+                )}
 
                 {isSuccess && (
                   <motion.div

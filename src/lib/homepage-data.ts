@@ -3,7 +3,7 @@
  */
 
 import { db } from '@/lib/db'
-import { buildImagesArray } from '@/lib/listing-images'
+import { getListingDisplayImages, getListingFeaturedImage } from '@/lib/listing-images'
 import { getAppSettings, toPublicSettings } from '@/lib/app-settings'
 
 export interface HomepageInitialData {
@@ -103,8 +103,8 @@ export async function getHomepageInitialData(): Promise<HomepageInitialData> {
       phone: l.phone,
       website: l.website,
       email: l.email,
-      image: l.image,
-      images: buildImagesArray(l.image, l.gallery),
+      image: getListingFeaturedImage(l.image, l.gallery),
+      images: getListingDisplayImages(l.image, l.gallery),
       rating: l.rating,
       reviewCount: l.reviewCount,
       featured: l.featured,

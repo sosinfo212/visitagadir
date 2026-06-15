@@ -39,29 +39,41 @@ export async function getSeoSettings(): Promise<SeoSettings> {
   return row
 }
 
-/** Prefer env site URL in production when DB still has localhost defaults. */
+/** Prefer env site URL when DB still has localhost, raw IP, or HTTP-only origins. */
 function applySiteUrlEnvOverride(row: SeoSettings): SeoSettings {
   const envUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL
-  if (!envUrl) return row
+  let siteUrl = row.siteUrl
+  let canonicalDomain = row.canonicalDomain
+  let titleTemplate = row.titleTemplate
 
-  let parsed: URL
-  try {
-    parsed = new URL(envUrl)
-  } catch {
+  if (envUrl) {
+    try {
+      const envOrigin = new URL(envUrl).origin
+      if (isUntrustedSiteUrl(siteUrl) || isUntrustedSiteUrl(canonicalDomain)) {
+        siteUrl = envOrigin
+        canonicalDomain = envOrigin
+      }
+    } catch {
+      // ignore invalid env URL
+    }
+  }
+
+  if (/testsite/i.test(titleTemplate)) {
+    titleTemplate = `%s · ${row.siteName || 'Agadir Directory'}`
+  }
+
+  if (siteUrl === row.siteUrl && canonicalDomain === row.canonicalDomain && titleTemplate === row.titleTemplate) {
     return row
   }
 
-  const envOrigin = parsed.origin
-  const dbIsLocalhost =
-    row.siteUrl.includes('localhost') || row.canonicalDomain.includes('localhost')
+  return { ...row, siteUrl, canonicalDomain, titleTemplate }
+}
 
-  if (!dbIsLocalhost) return row
-
-  return {
-    ...row,
-    siteUrl: envOrigin,
-    canonicalDomain: envOrigin,
-  }
+function isUntrustedSiteUrl(url: string): boolean {
+  if (!url?.trim()) return true
+  if (url.includes('localhost')) return true
+  if (/^https?:\/\/\d{1,3}(\.\d{1,3}){3}/i.test(url)) return true
+  return false
 }
 
 export async function updateSeoSettings(
