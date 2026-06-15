@@ -10,7 +10,8 @@ const DEFAULT_PLACEMENTS = [
   { name: 'Category Page Banner', location: 'category_banner', slotId: '4567890123', format: 'horizontal', adType: 'adsense', description: 'Banner ad on category view page', position: 4 },
   { name: 'Listings Feed', location: 'listings_feed', slotId: '5678901234', format: 'fluid', adType: 'adsense', description: 'In-feed ad between listing cards', position: 5 },
   { name: 'Article Inline', location: 'article_inline', slotId: '6789012345', format: 'fluid', adType: 'adsense', description: 'Inline ad within listing detail content', position: 6 },
-  { name: 'Sidebar Rectangle', location: 'sidebar_rectangle', slotId: '7890123456', format: 'rectangle', adType: 'adsense', description: 'Sidebar ad (300x250) on listing detail page', position: 7 },
+  { name: 'Blog Content Inline', location: 'blog_content_inline', slotId: '8901234567', format: 'fluid', adType: 'adsense', description: 'In-article ads injected inside blog post body', position: 7 },
+  { name: 'Sidebar Rectangle', location: 'sidebar_rectangle', slotId: '7890123456', format: 'rectangle', adType: 'adsense', description: 'Sidebar ad (300x250) on listing and blog pages', position: 8 },
 ]
 
 export async function GET() {
@@ -27,6 +28,13 @@ export async function GET() {
       // Seed default placements
       await db.adPlacement.createMany({ data: DEFAULT_PLACEMENTS })
       placements = await db.adPlacement.findMany({ orderBy: { position: 'asc' } })
+    } else {
+      const existingLocations = new Set(placements.map((p) => p.location))
+      const missing = DEFAULT_PLACEMENTS.filter((p) => !existingLocations.has(p.location))
+      if (missing.length > 0) {
+        await db.adPlacement.createMany({ data: missing })
+        placements = await db.adPlacement.findMany({ orderBy: { position: 'asc' } })
+      }
     }
 
     // Get or create settings

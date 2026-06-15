@@ -16,6 +16,7 @@ import { prepareBlogContent, estimateReadTimeMinutes } from '@/lib/blog/toc'
 import { getRelatedBlogPosts, getBlogSidebarListings } from '@/lib/blog/blog-post-sidebar-data'
 import { BlogPostLeftSidebar } from '@/components/blog/blog-post-left-sidebar'
 import { BlogPostRightSidebar } from '@/components/blog/blog-post-right-sidebar'
+import { BlogPostContent } from '@/components/blog/blog-post-content'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -166,10 +167,7 @@ export default async function BlogPostPage({ params }: PageProps) {
                 variant="mobile"
               />
 
-              <div
-                className="blog-content prose prose-gray max-w-none bg-white rounded-2xl shadow-sm p-6 sm:p-8"
-                dangerouslySetInnerHTML={{ __html: contentHtml }}
-              />
+              <BlogPostContent html={contentHtml} />
 
               {post.primaryKeywords && (
                 <p className="mt-6 text-xs text-muted-foreground">

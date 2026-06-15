@@ -26,6 +26,8 @@ export function BlogPostRightSidebar({
 }: BlogPostRightSidebarProps) {
   return (
     <div className="space-y-6">
+      <DynamicAdSlot location="sidebar_rectangle" className="min-h-[250px] rounded-xl overflow-hidden" />
+
       {relatedPosts.length > 0 && (
         <Card className="shadow-sm">
           <CardHeader className="pb-3 pt-4 px-4">
@@ -132,7 +134,6 @@ export function BlogPostRightSidebar({
         </CardContent>
       </Card>
 
-      <DynamicAdSlot location="sidebar_rectangle" className="min-h-[250px] rounded-xl overflow-hidden" />
     </div>
   )
 }

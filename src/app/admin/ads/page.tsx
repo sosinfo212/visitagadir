@@ -59,6 +59,7 @@ const locationLabels: Record<string, string> = {
   category_banner: 'Category Banner',
   listings_feed: 'Listings Feed',
   article_inline: 'Article Inline',
+  blog_content_inline: 'Blog Content Inline',
   sidebar_rectangle: 'Sidebar Rectangle',
 }
 
