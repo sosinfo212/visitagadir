@@ -1,0 +1,342 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id          String     @id @default(cuid())
+  name        String
+  slug        String     @unique
+  icon        String
+  description String?    @db.Text
+  image       String?    @db.MediumText
+  // Default schema.org type for listings in this category
+  // e.g. "BeautySalon", "Restaurant", "Hotel", "TravelAgency"...
+  // Falls back to "LocalBusiness" when not set.
+  defaultSchemaType String?
+  // Per-page SEO overrides (fall back to generated values)
+  seoTitle         String?
+  metaDescription  String?  @db.Text
+  metaKeywords     String?  @db.Text
+  canonicalUrl     String?
+  listings    Listing[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([slug])
+}
+
+model Listing {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String   @db.Text
+  address     String
+  phone       String?
+  website     String?
+  email       String?
+  image       String?  @db.MediumText
+  gallery     String?  @db.LongText
+  logo        String?  @db.MediumText
+  rating      Float    @default(0)
+  reviewCount Int      @default(0)
+  featured    Boolean  @default(false)
+  published   Boolean  @default(true)
+  // ── Location detail (used by LocalBusiness JSON-LD) ──
+  city        String   @default("Agadir")
+  region      String?
+  postalCode  String?
+  country     String   @default("MA")
+  latitude    Float?
+  longitude   Float?
+  // ── Business detail ──
+  // JSON-encoded array of OpeningHoursSpecification objects:
+  //   [{ dayOfWeek: ["Monday","Tuesday"], opens: "09:00", closes: "18:00" }, ...]
+  openingHours String? @db.Text
+  priceRange   String? // "$", "$$", "$$$"
+  // ── SEO overrides (fall back to generated values) ──
+  seoTitle         String?
+  metaDescription  String?  @db.Text
+  metaKeywords     String?  @db.Text
+  canonicalUrl     String?
+  // schema.org type override; falls back to category.defaultSchemaType → LocalBusiness
+  schemaType       String?
+  // ── Relations ──
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  submissionId String?  @unique
+  submission   Submission? @relation(fields: [submissionId], references: [id], onDelete: SetNull)
+  reviews     Review[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+  @@index([categoryId])
+  @@index([city])
+  @@index([featured])
+  @@index([published])
+  @@index([userId])
+}
+
+model Review {
+  id             String    @id @default(cuid())
+  authorName     String
+  rating         Int
+  comment        String    @db.Text
+  approved       Boolean   @default(false)
+  ownerReply     String?   @db.Text
+  ownerRepliedAt DateTime?
+  listingId      String
+  listing        Listing   @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model User {
+  id            String       @id @default(cuid())
+  name          String?
+  email         String       @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?
+  accounts      Account[]
+  sessions      Session[]
+  submissions   Submission[]
+  listings      Listing[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Submission {
+  id          String   @id @default(cuid())
+  businessName String
+  description String
+  category    String
+  address     String
+  phone       String?
+  website     String?
+  email       String?
+  ownerName   String
+  message     String?
+  image       String?  @db.MediumText
+  gallery     String?  @db.LongText
+  status      String   @default("pending")
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  listing     Listing?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model AdPlacement {
+  id          String   @id @default(cuid())
+  name        String
+  location    String   @unique
+  slotId      String?
+  format      String   @default("auto")
+  adType      String   @default("adsense")
+  enabled     Boolean  @default(true)
+  customHtml  String?
+  description String?
+  position    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AdSettings {
+  id               String   @id @default(cuid())
+  publisherId      String   @default("ca-pub-XXXXXXXXXXXXXXXX")
+  adsEnabled       Boolean  @default(true)
+  showPlaceholders Boolean  @default(false)
+  adsTxt           String?  @db.LongText
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+// Tracking pixels & site verification tags
+// type: 'facebook' | 'tiktok' | 'ga4' | 'gtm' | 'gsc' | 'custom_head' | 'custom_body'
+model TrackingPixel {
+  id          String   @id @default(cuid())
+  type        String
+  name        String
+  pixelId     String?
+  customCode  String?  @db.Text
+  enabled     Boolean  @default(false)
+  position    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ─── SEO ───────────────────────────────────────────────
+// Site-wide SEO defaults (singleton table; the first row is canonical)
+model SeoSettings {
+  id                 String   @id @default(cuid())
+  siteName           String   @default("Agadir Directory")
+  siteUrl            String   @default("http://localhost:3000")
+  defaultTitle       String   @default("Agadir Directory - Your Complete Guide to Agadir City")
+  titleTemplate      String   @default("%s | Agadir Directory") // %s = page-specific title
+  // MySQL TEXT columns cannot have defaults — seeded in code.
+  defaultDescription String   @db.Text
+  defaultKeywords    String?  @db.Text   // comma-separated
+  defaultRobots      String   @default("index,follow")
+  canonicalDomain    String   @default("http://localhost:3000")
+  faviconUrl         String   @default("/agadir-logo.png")
+  defaultOgImage     String?  @db.MediumText
+  defaultLocale      String   @default("en_MA")
+  twitterHandle      String?
+  twitterCardType    String   @default("summary_large_image")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+// Schema.org (Organization + WebSite) source-of-truth (singleton)
+model SchemaSettings {
+  id                String   @id @default(cuid())
+  organizationName  String   @default("Agadir Directory")
+  organizationType  String   @default("Organization")
+  logoUrl           String?  @db.MediumText
+  phone             String?
+  email             String?
+  streetAddress     String?
+  addressLocality   String   @default("Agadir")
+  addressRegion     String   @default("Souss-Massa")
+  postalCode        String?
+  country           String   @default("MA")
+  websiteUrl        String   @default("http://localhost:3000")
+  searchUrlPattern  String   @default("/?search={search_term_string}")
+  // JSON array: [{ platform: 'facebook', url: '...', enabled: true }, ...]
+  socialProfiles    String?  @db.Text
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+// HTTP redirect rules — looked up by middleware
+model Redirect {
+  id          String   @id @default(cuid())
+  source      String   @unique           // exact path, e.g. /old-page
+  destination String                      // path or absolute URL
+  statusCode  Int      @default(301)     // 301 | 302 | 307 | 308
+  enabled     Boolean  @default(true)
+  hits        Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([enabled])
+}
+
+// ─── Blog ───────────────────────────────────────────────
+model BlogCategory {
+  id          String     @id @default(cuid())
+  name        String
+  slug        String     @unique
+  description String?    @db.Text
+  posts       BlogPost[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([slug])
+}
+
+// Site & admin app settings (singleton)
+model AppSettings {
+  id               String   @id @default(cuid())
+  siteName         String   @default("Agadir Directory")
+  siteLogoUrl      String   @default("/agadir-logo.png")
+  siteLogoWidth    Int      @default(32)
+  siteLogoHeight   Int      @default(32)
+  faviconUrl       String   @default("/agadir-logo.png")
+  footerLogoUrl    String   @default("/agadir-logo.png")
+  footerLogoWidth  Int      @default(32)
+  footerLogoHeight Int      @default(32)
+  adminName        String   @default("Administrator")
+  adminEmail       String   @default("admin@visitagadir.info")
+  passwordHash     String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+// Anonymous search & browse events for admin analytics
+model SearchEvent {
+  id           String   @id @default(cuid())
+  query        String?
+  categorySlug String?
+  createdAt    DateTime @default(now())
+
+  @@index([query])
+  @@index([categorySlug])
+  @@index([createdAt])
+}
+
+model BlogPost {
+  id              String       @id @default(cuid())
+  title           String
+  slug            String       @unique
+  excerpt         String?      @db.Text
+  content         String       @db.LongText
+  coverImage      String?      @db.MediumText
+  authorName      String       @default("Agadir Directory")
+  status          String       @default("draft") // draft | published
+  publishedAt     DateTime?
+  categoryId      String
+  category        BlogCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  // SEO
+  primaryKeywords String?      @db.Text   // comma-separated focus keywords
+  seoTitle        String?
+  metaDescription String?      @db.Text
+  canonicalUrl    String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([slug])
+  @@index([status])
+  @@index([publishedAt])
+  @@index([categoryId])
+}
