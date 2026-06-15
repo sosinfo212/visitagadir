@@ -179,7 +179,8 @@ async function run() {
     ids.listingId = create.data?.id
 
     const list = await req('/api/admin/listings', { jar: adminJar })
-    assert('Listing READ list', list.status === 200 && list.data?.some((l) => l.id === ids.listingId))
+    const listItems = Array.isArray(list.data) ? list.data : list.data?.items
+    assert('Listing READ list', list.status === 200 && listItems?.some((l) => l.id === ids.listingId))
 
     const update = await req(`/api/admin/listings/${ids.listingId}`, {
       method: 'PUT',

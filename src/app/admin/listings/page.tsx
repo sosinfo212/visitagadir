@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import {
   Building2, Search, Plus, Pencil, Trash2, Star, ToggleLeft, ToggleRight, Loader2,
-  ChevronDown, ChevronRight, Search as SearchIcon, MapPin, Clock, Upload,
+  ChevronDown, ChevronRight, ChevronLeft, Search as SearchIcon, MapPin, Clock, Upload,
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -77,6 +77,14 @@ interface Listing {
   logo?: string | null
 }
 
+interface ListingsResponse {
+  items: Listing[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+}
+
 interface ListingImportResult {
   listingsImported: number
   listingsSkipped: number
@@ -87,6 +95,8 @@ interface ListingImportResult {
   errors: string[]
   message?: string
 }
+
+const PAGE_SIZE = 25
 
 interface ListingForm {
   name: string
@@ -191,8 +201,12 @@ export default function ListingsPage() {
   const [listings, setListings] = useState<Listing[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
+  const [searchInput, setSearchInput] = useState('')
+  const [appliedSearch, setAppliedSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('all')
+  const [page, setPage] = useState(1)
+  const [total, setTotal] = useState(0)
+  const [totalPages, setTotalPages] = useState(1)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null)
@@ -213,11 +227,18 @@ export default function ListingsPage() {
 
   const fetchListings = useCallback(async () => {
     const params = new URLSearchParams()
-    if (search) params.set('search', search)
+    if (appliedSearch) params.set('search', appliedSearch)
     if (categoryFilter !== 'all') params.set('category', categoryFilter)
+    params.set('page', String(page))
+    params.set('limit', String(PAGE_SIZE))
     const res = await fetch(`/api/admin/listings?${params}`)
-    if (res.ok) setListings(await res.json())
-  }, [search, categoryFilter])
+    if (!res.ok) return
+    const data: ListingsResponse = await res.json()
+    setListings(data.items)
+    setTotal(data.total)
+    setTotalPages(data.totalPages)
+    setPage(data.page)
+  }, [appliedSearch, categoryFilter, page])
 
   const fetchCategories = async () => {
     const res = await fetch('/api/admin/categories')
@@ -225,8 +246,31 @@ export default function ListingsPage() {
   }
 
   useEffect(() => { fetchCategories() }, [])
-  useEffect(() => { fetchListings().finally(() => setLoading(false)) }, [fetchListings])
-  useEffect(() => { setSelectedIds(new Set()) }, [search, categoryFilter])
+
+  useEffect(() => {
+    setLoading(true)
+    fetchListings().finally(() => setLoading(false))
+  }, [fetchListings])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setAppliedSearch(searchInput.trim())
+      setPage(1)
+    }, 400)
+    return () => window.clearTimeout(timer)
+  }, [searchInput])
+
+  useEffect(() => { setSelectedIds(new Set()) }, [appliedSearch, categoryFilter])
+
+  function applySearchNow() {
+    setAppliedSearch(searchInput.trim())
+    setPage(1)
+  }
+
+  function handleCategoryChange(value: string) {
+    setCategoryFilter(value)
+    setPage(1)
+  }
 
   const allVisibleSelected = listings.length > 0 && listings.every((listing) => selectedIds.has(listing.id))
   const someVisibleSelected = listings.some((listing) => selectedIds.has(listing.id))
@@ -245,7 +289,7 @@ export default function ListingsPage() {
     else setSelectedIds(new Set())
   }
 
-  async function runBulkAction(action: 'delete' | 'changeCategory' | 'unpublish' | 'publish') {
+  async function runBulkAction(action: 'delete' | 'changeCategory' | 'unpublish' | 'publish' | 'feature' | 'unfeature') {
     const ids = [...selectedIds]
     if (ids.length === 0) return
 
@@ -526,11 +570,25 @@ export default function ListingsPage() {
       <Card className="border-0 shadow-sm">
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Search listings..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
-            </div>
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <form
+              className="relative flex-1 flex gap-2"
+              onSubmit={(e) => {
+                e.preventDefault()
+                applySearchNow()
+              }}
+            >
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by name, address, phone, email…"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              <Button type="submit" variant="outline">Search</Button>
+            </form>
+            <Select value={categoryFilter} onValueChange={handleCategoryChange}>
               <SelectTrigger className="w-full sm:w-52"><SelectValue placeholder="All Categories" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
@@ -540,6 +598,13 @@ export default function ListingsPage() {
               </SelectContent>
             </Select>
           </div>
+          {!loading && (
+            <p className="text-xs text-muted-foreground mt-3">
+              {total === 0
+                ? 'No listings match your filters'
+                : `Showing ${(page - 1) * PAGE_SIZE + 1}–${Math.min(page * PAGE_SIZE, total)} of ${total} listings`}
+            </p>
+          )}
         </CardContent>
       </Card>
 
@@ -583,6 +648,23 @@ export default function ListingsPage() {
                   onClick={() => runBulkAction('publish')}
                 >
                   Publish
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={bulkWorking}
+                  onClick={() => runBulkAction('feature')}
+                >
+                  <Star className="h-3.5 w-3.5 mr-1 text-amber-500" />
+                  Set featured
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={bulkWorking}
+                  onClick={() => runBulkAction('unfeature')}
+                >
+                  Remove featured
                 </Button>
                 <Button
                   variant="destructive"
@@ -680,6 +762,33 @@ export default function ListingsPage() {
                   })}
                 </TableBody>
               </Table>
+            </div>
+          )}
+          {!loading && listings.length > 0 && totalPages > 1 && (
+            <div className="flex items-center justify-between gap-3 px-4 py-3 border-t">
+              <p className="text-sm text-muted-foreground">
+                Page {page} of {totalPages}
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={page <= 1}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={page >= totalPages}
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>

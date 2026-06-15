@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { isAuthenticated } from '@/lib/admin-auth'
 import { db } from '@/lib/db'
 
-type BulkAction = 'delete' | 'changeCategory' | 'unpublish' | 'publish'
+type BulkAction = 'delete' | 'changeCategory' | 'unpublish' | 'publish' | 'feature' | 'unfeature'
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,6 +39,22 @@ export async function POST(request: NextRequest) {
       const result = await db.listing.updateMany({
         where: { id: { in: ids } },
         data: { published: true },
+      })
+      return NextResponse.json({ success: true, affected: result.count })
+    }
+
+    if (action === 'feature') {
+      const result = await db.listing.updateMany({
+        where: { id: { in: ids } },
+        data: { featured: true },
+      })
+      return NextResponse.json({ success: true, affected: result.count })
+    }
+
+    if (action === 'unfeature') {
+      const result = await db.listing.updateMany({
+        where: { id: { in: ids } },
+        data: { featured: false },
       })
       return NextResponse.json({ success: true, affected: result.count })
     }
