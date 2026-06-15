@@ -23,6 +23,18 @@ let adsenseScriptLoading = false
 function loadAdSenseScript(publisherId: string) {
   if (adsenseScriptLoaded || adsenseScriptLoading || !publisherId || publisherId === 'ca-pub-XXXXXXXXXXXXXXXX') return
   adsenseScriptLoading = true
+
+  // Opt out of AdSense Auto ads (e.g. "Discover more" below footer); manual slots only.
+  try {
+    // @ts-expect-error adsbygoogle is injected by Google
+    ;(window.adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: publisherId,
+      enable_page_level_ads: false,
+    })
+  } catch {
+    // ignore
+  }
+
   const script = document.createElement('script')
   script.async = true
   script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${publisherId}`
