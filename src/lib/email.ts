@@ -27,6 +27,7 @@ export async function sendEmail(options: {
   subject: string
   html: string
   text?: string
+  replyTo?: string
 }): Promise<boolean> {
   const transport = getTransport()
   if (!transport || !smtpFrom) {
@@ -38,6 +39,7 @@ export async function sendEmail(options: {
     await transport.sendMail({
       from: `Agadir Directory <${smtpFrom}>`,
       to: options.to,
+      replyTo: options.replyTo,
       subject: options.subject,
       html: options.html,
       text: options.text,
@@ -86,4 +88,47 @@ export async function sendNewReviewNotification(options: {
   `
 
   return sendEmail({ to: options.ownerEmail, subject, html, text })
+}
+
+export async function sendContactFormNotification(options: {
+  adminEmail: string
+  name: string
+  email: string
+  subject?: string
+  message: string
+}) {
+  const trimmedSubject = options.subject?.trim()
+  const subject = trimmedSubject
+    ? `[Contact] ${trimmedSubject}`
+    : `[Contact] Message from ${options.name}`
+
+  const text = [
+    'New contact form submission',
+    '',
+    `Name: ${options.name}`,
+    `Email: ${options.email}`,
+    trimmedSubject ? `Subject: ${trimmedSubject}` : '',
+    '',
+    options.message,
+  ]
+    .filter(Boolean)
+    .join('\n')
+
+  const html = `
+    <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;color:#111">
+      <h2 style="margin:0 0 16px">New contact form message</h2>
+      <p><strong>Name:</strong> ${options.name}</p>
+      <p><strong>Email:</strong> <a href="mailto:${options.email}">${options.email}</a></p>
+      ${trimmedSubject ? `<p><strong>Subject:</strong> ${trimmedSubject}</p>` : ''}
+      <p style="background:#f5f5f5;padding:12px;border-radius:8px;white-space:pre-wrap">${options.message}</p>
+    </div>
+  `
+
+  return sendEmail({
+    to: options.adminEmail,
+    subject,
+    html,
+    text,
+    replyTo: options.email,
+  })
 }

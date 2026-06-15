@@ -12,7 +12,6 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Separator } from '@/components/ui/separator'
 
 const fadeInUp = {
   initial: { y: 40, opacity: 0 },
@@ -34,12 +33,25 @@ export default function ContactPage() {
       return
     }
     setIsSubmitting(true)
-    // Simulate submission
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    setIsSuccess(true)
-    setIsSubmitting(false)
-    setForm({ name: '', email: '', subject: '', message: '' })
-    setTimeout(() => setIsSuccess(false), 4000)
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || 'Failed to send message. Please try again.')
+        return
+      }
+      setIsSuccess(true)
+      setForm({ name: '', email: '', subject: '', message: '' })
+      setTimeout(() => setIsSuccess(false), 4000)
+    } catch {
+      setError('Failed to send message. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -255,52 +267,6 @@ export default function ContactPage() {
           </motion.div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div className="col-span-2 md:col-span-1">
-              <div className="flex items-center gap-2.5 mb-4">
-                <img src="/agadir-logo.png" alt="Agadir Directory" className="h-8 w-8 rounded-lg" />
-                <span className="font-bold text-lg">Agadir Directory</span>
-              </div>
-              <p className="text-gray-400 text-sm leading-relaxed">
-                Your complete guide to discovering the best of Agadir, Morocco.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-3">Pages</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link href="/" className="hover:text-white transition-colors">Home</Link></li>
-                <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
-                <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
-                <li><Link href="/advertise" className="hover:text-white transition-colors">Advertise</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-3">Legal</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
-                <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-3">Contact</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li>info@agadirdirectory.com</li>
-                <li>+212 528 000 000</li>
-                <li>Agadir, Morocco</li>
-              </ul>
-            </div>
-          </div>
-          <Separator className="my-8 bg-gray-800" />
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500">
-            <p>&copy; {new Date().getFullYear()} Agadir Directory. All rights reserved.</p>
-            <p>Made with Heart in Agadir, Morocco</p>
-          </div>
-        </div>
-      </footer>
     </div>
   )
 }
