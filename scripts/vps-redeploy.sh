@@ -8,13 +8,6 @@ SITE_URL="https://visitagadir.info"
 cd "$APP_DIR"
 git pull origin main
 
-# smtp.visitagadir.info often points at the VPS itself (no mail daemon). Use Hostinger SMTP.
-if grep -q '^SMTP_HOST=' .env; then
-  sed -i 's|^SMTP_HOST=.*|SMTP_HOST="smtp.hostinger.com"|' .env
-else
-  echo 'SMTP_HOST="smtp.hostinger.com"' >> .env
-fi
-
 # Ensure production env uses the public HTTPS domain (not raw IP).
 if grep -q '^NEXTAUTH_URL=' .env; then
   sed -i "s|^NEXTAUTH_URL=.*|NEXTAUTH_URL=\"${SITE_URL}\"|" .env
