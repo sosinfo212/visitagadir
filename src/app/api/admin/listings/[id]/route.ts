@@ -4,6 +4,33 @@ import { db } from '@/lib/db'
 import { buildImagesArray } from '@/lib/listing-images'
 import { buildListingPayload } from '@/lib/listing-payload'
 
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const authed = await isAuthenticated()
+    if (!authed) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const { id } = await params
+    const listing = await db.listing.findUnique({
+      where: { id },
+      include: {
+        category: { select: { name: true, slug: true, icon: true, defaultSchemaType: true } },
+      },
+    })
+    if (!listing) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+    return NextResponse.json({
+      ...listing,
+      images: buildImagesArray(listing.image, listing.gallery),
+    })
+  } catch (error) {
+    console.error('Fetch listing error:', error)
+    return NextResponse.json({ error: 'Failed to fetch listing' }, { status: 500 })
+  }
+}
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },

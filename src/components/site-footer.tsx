@@ -45,7 +45,7 @@ export function SiteFooter({ branding }: { branding?: AppSettingsPublic | null }
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div className="col-span-2 md:col-span-1">
-            <div className="flex items-center gap-2.5 mb-4">
+            <div className="mb-4">
               <img
                 src={footerBranding.footerLogoUrl}
                 alt={footerBranding.siteName}
@@ -55,7 +55,6 @@ export function SiteFooter({ branding }: { branding?: AppSettingsPublic | null }
                   height: footerBranding.footerLogoHeight,
                 }}
               />
-              <span className="font-bold text-lg">{footerBranding.siteName}</span>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed">
               Your complete guide to discovering the best of Agadir, Morocco. Find restaurants, hotels, beaches, services, and more.

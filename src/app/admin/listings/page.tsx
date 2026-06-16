@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import {
   Building2, Search, Plus, Pencil, Trash2, Star, ToggleLeft, ToggleRight, Loader2,
-  ChevronDown, ChevronRight, ChevronLeft, Search as SearchIcon, MapPin, Clock, Upload,
+  ChevronDown, ChevronRight, ChevronLeft, Search as SearchIcon, MapPin, Clock, Upload, Files, ExternalLink,
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -94,6 +94,29 @@ interface ListingImportResult {
   mediaFailed: number
   errors: string[]
   message?: string
+}
+
+interface DuplicateListingSummary {
+  id: string
+  name: string
+  slug: string
+  phone: string | null
+  address: string
+  published: boolean
+  category: { name: string }
+}
+
+interface DuplicateGroup {
+  type: 'name' | 'phone'
+  key: string
+  displayKey: string
+  listings: DuplicateListingSummary[]
+}
+
+interface DuplicatesResponse {
+  groups: DuplicateGroup[]
+  groupCount: number
+  duplicateListingCount: number
 }
 
 const PAGE_SIZE = 25
@@ -224,6 +247,14 @@ export default function ListingsPage() {
   const [bulkCategoryId, setBulkCategoryId] = useState('')
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
   const [bulkWorking, setBulkWorking] = useState(false)
+  const [duplicatesOpen, setDuplicatesOpen] = useState(false)
+  const [duplicatesLoading, setDuplicatesLoading] = useState(false)
+  const [duplicatesError, setDuplicatesError] = useState('')
+  const [duplicateGroups, setDuplicateGroups] = useState<DuplicateGroup[]>([])
+  const [duplicateListingCount, setDuplicateListingCount] = useState(0)
+  const [duplicateSelectedIds, setDuplicateSelectedIds] = useState<Set<string>>(new Set())
+  const [duplicateDeleteOpen, setDuplicateDeleteOpen] = useState(false)
+  const [duplicateDeleting, setDuplicateDeleting] = useState(false)
 
   const fetchListings = useCallback(async () => {
     const params = new URLSearchParams()
@@ -435,6 +466,100 @@ export default function ListingsPage() {
     }
   }
 
+  async function handleFindDuplicates() {
+    setDuplicatesOpen(true)
+    setDuplicatesLoading(true)
+    setDuplicatesError('')
+    setDuplicateGroups([])
+    setDuplicateListingCount(0)
+    setDuplicateSelectedIds(new Set())
+
+    try {
+      const res = await fetch('/api/admin/listings/duplicates')
+      const data: DuplicatesResponse & { error?: string } = await res.json()
+      if (!res.ok) {
+        setDuplicatesError(data.error || 'Failed to scan for duplicates.')
+        return
+      }
+      setDuplicateGroups(data.groups)
+      setDuplicateListingCount(data.duplicateListingCount)
+    } catch {
+      setDuplicatesError('Failed to scan for duplicates.')
+    } finally {
+      setDuplicatesLoading(false)
+    }
+  }
+
+  async function handleEditById(id: string) {
+    try {
+      const res = await fetch(`/api/admin/listings/${id}`)
+      if (!res.ok) return
+      const listing: Listing = await res.json()
+      setDuplicatesOpen(false)
+      handleEdit(listing)
+    } catch {
+      // ignore
+    }
+  }
+
+  function toggleDuplicateSelected(id: string, checked: boolean) {
+    setDuplicateSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (checked) next.add(id)
+      else next.delete(id)
+      return next
+    })
+  }
+
+  function toggleDuplicateGroup(group: DuplicateGroup, checked: boolean) {
+    setDuplicateSelectedIds((prev) => {
+      const next = new Set(prev)
+      for (const listing of group.listings) {
+        if (checked) next.add(listing.id)
+        else next.delete(listing.id)
+      }
+      return next
+    })
+  }
+
+  function selectAllDuplicates() {
+    const ids = new Set<string>()
+    for (const group of duplicateGroups) {
+      for (const listing of group.listings) ids.add(listing.id)
+    }
+    setDuplicateSelectedIds(ids)
+  }
+
+  async function handleDeleteDuplicateSelection() {
+    const ids = [...duplicateSelectedIds]
+    if (ids.length === 0) return
+
+    setDuplicateDeleting(true)
+    try {
+      const res = await fetch('/api/admin/listings/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids, action: 'delete' }),
+      })
+      if (!res.ok) throw new Error('Delete failed')
+
+      setDuplicateDeleteOpen(false)
+      setDuplicateSelectedIds(new Set())
+      await fetchListings()
+
+      const scanRes = await fetch('/api/admin/listings/duplicates')
+      const data: DuplicatesResponse & { error?: string } = await scanRes.json()
+      if (scanRes.ok) {
+        setDuplicateGroups(data.groups)
+        setDuplicateListingCount(data.duplicateListingCount)
+      }
+    } catch {
+      // keep selection so admin can retry
+    } finally {
+      setDuplicateDeleting(false)
+    }
+  }
+
   async function handleImport() {
     if (!importFile) {
       setImportError('Choose a WordPress listings XML export file first.')
@@ -480,9 +605,15 @@ export default function ListingsPage() {
           <h1 className="text-2xl font-bold text-gray-900">Listings</h1>
           <p className="text-sm text-muted-foreground mt-1">Manage all business listings in the directory</p>
         </div>
-        <Button onClick={handleNew} className="bg-gradient-to-r from-orange-500 to-teal-500 hover:from-orange-600 hover:to-teal-600 text-white">
-          <Plus className="h-4 w-4 mr-1.5" /> Add Listing
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={handleFindDuplicates}>
+            <Files className="h-4 w-4 mr-1.5" />
+            Find duplicates
+          </Button>
+          <Button onClick={handleNew} className="bg-gradient-to-r from-orange-500 to-teal-500 hover:from-orange-600 hover:to-teal-600 text-white">
+            <Plus className="h-4 w-4 mr-1.5" /> Add Listing
+          </Button>
+        </div>
       </div>
 
       <Card className="border-0 shadow-sm">
@@ -793,6 +924,137 @@ export default function ListingsPage() {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={duplicatesOpen} onOpenChange={setDuplicatesOpen}>
+        <DialogContent className="sm:max-w-3xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Duplicate listings</DialogTitle>
+            <DialogDescription>
+              Listings with the same normalized name or the same phone number (digits only).
+            </DialogDescription>
+          </DialogHeader>
+
+          {duplicatesLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : duplicatesError ? (
+            <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{duplicatesError}</p>
+          ) : duplicateGroups.length === 0 ? (
+            <div className="text-center py-10 text-muted-foreground">
+              <Files className="h-10 w-10 mx-auto mb-3 opacity-30" />
+              <p>No duplicate listings found.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <p className="text-sm text-muted-foreground">
+                  {duplicateGroups.length} duplicate group{duplicateGroups.length === 1 ? '' : 's'} affecting {duplicateListingCount} listing{duplicateListingCount === 1 ? '' : 's'}.
+                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={selectAllDuplicates}>
+                    Select all
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setDuplicateSelectedIds(new Set())}
+                    disabled={duplicateSelectedIds.size === 0}
+                  >
+                    Clear
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    disabled={duplicateSelectedIds.size === 0}
+                    onClick={() => setDuplicateDeleteOpen(true)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5 mr-1" />
+                    Delete selected ({duplicateSelectedIds.size})
+                  </Button>
+                </div>
+              </div>
+              {duplicateGroups.map((group) => {
+                const groupIds = group.listings.map((l) => l.id)
+                const allGroupSelected = groupIds.every((id) => duplicateSelectedIds.has(id))
+                const someGroupSelected = groupIds.some((id) => duplicateSelectedIds.has(id))
+
+                return (
+                <div key={`${group.type}-${group.key}`} className="rounded-lg border bg-muted/20 overflow-hidden">
+                  <div className="flex items-center gap-2 px-4 py-3 border-b bg-background">
+                    <Checkbox
+                      checked={allGroupSelected ? true : someGroupSelected ? 'indeterminate' : false}
+                      onCheckedChange={(v) => toggleDuplicateGroup(group, v === true)}
+                      aria-label={`Select all in ${group.displayKey}`}
+                    />
+                    <Badge variant={group.type === 'name' ? 'default' : 'secondary'}>
+                      {group.type === 'name' ? 'Same name' : 'Same phone'}
+                    </Badge>
+                    <span className="text-sm font-medium truncate">{group.displayKey}</span>
+                    <span className="text-xs text-muted-foreground ml-auto">{group.listings.length} listings</span>
+                  </div>
+                  <div className="divide-y">
+                    {group.listings.map((listing) => (
+                      <div key={listing.id} className="flex flex-col sm:flex-row sm:items-center gap-2 px-4 py-3">
+                        <Checkbox
+                          checked={duplicateSelectedIds.has(listing.id)}
+                          onCheckedChange={(v) => toggleDuplicateSelected(listing.id, v === true)}
+                          aria-label={`Select ${listing.name}`}
+                          className="sm:mt-0.5"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-sm">{listing.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">{listing.address}</p>
+                          <div className="flex flex-wrap gap-2 mt-1">
+                            <Badge variant="secondary" className="text-xs">{listing.category.name}</Badge>
+                            {listing.phone && <span className="text-xs text-muted-foreground">{listing.phone}</span>}
+                            <Badge variant={listing.published ? 'default' : 'outline'} className="text-xs">
+                              {listing.published ? 'Published' : 'Unpublished'}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0 sm:ml-auto">
+                          <Button variant="outline" size="sm" onClick={() => handleEditById(listing.id)}>
+                            <Pencil className="h-3.5 w-3.5 mr-1" />
+                            Edit
+                          </Button>
+                          <Button variant="ghost" size="sm" asChild>
+                            <a href={`/listing/${listing.slug}`} target="_blank" rel="noopener noreferrer">
+                              <ExternalLink className="h-3.5 w-3.5 mr-1" />
+                              View
+                            </a>
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )})}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={duplicateDeleteOpen} onOpenChange={setDuplicateDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete selected duplicates</AlertDialogTitle>
+            <AlertDialogDescription>
+              Delete {duplicateSelectedIds.size} listing{duplicateSelectedIds.size === 1 ? '' : 's'}? This also removes associated reviews and cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={duplicateDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={duplicateDeleting}
+              onClick={handleDeleteDuplicateSelection}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {duplicateDeleting ? 'Deleting…' : 'Delete selected'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Edit / New Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
