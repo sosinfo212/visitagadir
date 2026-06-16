@@ -264,3 +264,19 @@ body > div:has(ins.adsbygoogle:not([data-ad-slot])),
 footer ~ div:has(ins.adsbygoogle:not([data-ad-slot])) {
   display: none !important;
 }
+
+/* Keep manual ad units responsive without clipping expanded content (e.g. multiplex) */
+.ad-container {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: clip;
+  overflow-y: visible;
+}
+
+.ad-container ins.adsbygoogle,
+.ad-container iframe {
+  display: block;
+  max-width: 100% !important;
+  box-sizing: border-box;
+}

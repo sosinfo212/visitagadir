@@ -64,12 +64,12 @@ export function ListingPhotosGallery({ name, images: rawImages }: ListingPhotosG
 
   return (
     <>
-      <Card className="shadow-sm">
-        <CardContent className="p-6">
+      <Card className="shadow-sm w-full min-w-0 overflow-hidden">
+        <CardContent className="p-4 sm:p-6">
           <h3 className="text-xl font-semibold mb-4">Photos</h3>
 
           <div
-            className="relative rounded-xl overflow-hidden bg-gray-100 aspect-[16/10]"
+            className="relative w-full max-w-full rounded-xl overflow-hidden bg-gray-100 aspect-[16/10]"
             onTouchStart={onTouchStart}
             onTouchEnd={onTouchEnd}
           >
@@ -82,7 +82,7 @@ export function ListingPhotosGallery({ name, images: rawImages }: ListingPhotosG
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.25 }}
-                className="absolute inset-0 w-full h-full object-contain cursor-zoom-in bg-gray-100"
+                className="absolute inset-0 w-full h-full max-w-full object-cover cursor-zoom-in bg-gray-100"
                 onClick={() => openLightbox(safeIdx)}
               />
             </AnimatePresence>
@@ -110,7 +110,7 @@ export function ListingPhotosGallery({ name, images: rawImages }: ListingPhotosG
           </div>
 
           {hasMultiple && (
-            <div className="mt-4 flex items-center gap-2 overflow-x-auto pb-1">
+            <div className="mt-4 flex w-full max-w-full items-center gap-2 overflow-x-auto pb-1">
               {images.map((src, i) => (
                 <button
                   key={`${src}-${i}`}

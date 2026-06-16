@@ -64,7 +64,7 @@ export function ListingDetailPage({ bundle }: { bundle: ListingBundle }) {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <div className="relative h-56 sm:h-72 md:h-80 overflow-hidden bg-gray-200">
+      <div className="relative w-full max-w-[100vw] h-56 sm:h-72 md:h-80 overflow-hidden bg-gray-200">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={heroImage}
@@ -94,8 +94,8 @@ export function ListingDetailPage({ bundle }: { bundle: ListingBundle }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         <BreadcrumbNav items={breadcrumbs.map((b) => ({ name: b.name, href: b.url }))} />
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-6">
+        <div className="grid lg:grid-cols-3 gap-8 min-w-0">
+          <div className="lg:col-span-2 space-y-6 min-w-0">
             {images.length > 0 && (
               <ListingPhotosGallery name={listing.name} images={images} />
             )}

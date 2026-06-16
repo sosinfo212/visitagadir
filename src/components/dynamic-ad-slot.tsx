@@ -90,10 +90,10 @@ function AdSenseSlot({
   }
 
   return (
-    <div className={`ad-container max-w-full overflow-hidden ${className}`}>
+    <div className={`ad-container w-full max-w-full min-w-0 ${className}`}>
       <ins
         className="adsbygoogle"
-        style={{ display: 'block' }}
+        style={{ display: 'block', minHeight: format === 'fluid' ? 'auto' : undefined }}
         data-ad-client={publisherId}
         data-ad-slot={slot}
         data-ad-format={format}
@@ -155,7 +155,7 @@ export function DynamicAdSlot({
     if (!placement.customHtml) return null
     return (
       <div
-        className={`max-w-full overflow-hidden ${className}`}
+        className={`ad-container w-full max-w-full min-w-0 ${className}`}
         dangerouslySetInnerHTML={{ __html: placement.customHtml }}
       />
     )

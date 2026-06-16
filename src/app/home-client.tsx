@@ -798,7 +798,7 @@ export default function Home({
   useEffect(() => {
     if (initialData) return
 
-    Promise.all([
+      Promise.all([
       fetch('/api/categories').then((r) => r.json()),
       fetch('/api/listings?featured=true').then((r) => r.json()),
       fetch('/api/blog/latest').then((r) => r.json()).catch(() => []),
@@ -984,7 +984,7 @@ export default function Home({
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-white overflow-x-hidden">
 
       {/* Main Content */}
       <main className="flex-1">
@@ -1009,8 +1009,8 @@ export default function Home({
               />
 
               {/* Ad Banner - Top */}
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-                <DynamicAdSlot location="header_banner" className="mt-2" />
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 w-full min-w-0">
+                <DynamicAdSlot location="header_banner" className="mt-2 w-full min-w-0" />
               </div>
 
               {/* Categories Grid */}
@@ -1115,8 +1115,8 @@ export default function Home({
                   </div>
 
                   {/* Ad in middle of featured section */}
-                  <div className="mt-8">
-                    <DynamicAdSlot location="featured_feed" />
+                  <div className="mt-8 w-full min-w-0">
+                    <DynamicAdSlot location="featured_feed" className="w-full min-w-0" />
                   </div>
                 </div>
               </section>
@@ -1238,8 +1238,8 @@ export default function Home({
               </section>
 
               {/* Bottom Ad */}
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
-                <DynamicAdSlot location="bottom_banner" />
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 w-full min-w-0">
+                <DynamicAdSlot location="bottom_banner" className="w-full min-w-0" />
               </div>
             </motion.div>
           )}
@@ -1423,7 +1423,7 @@ export default function Home({
               transition={{ duration: 0.3 }}
             >
               {/* Listing Header */}
-              <div className="relative h-56 sm:h-72 md:h-80 overflow-hidden bg-gray-200">
+              <div className="relative w-full max-w-[100vw] h-56 sm:h-72 md:h-80 overflow-hidden bg-gray-200">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={getListingCardImage(selectedListing)}
@@ -1463,9 +1463,9 @@ export default function Home({
               </div>
 
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div className="grid lg:grid-cols-3 gap-8">
+                <div className="grid lg:grid-cols-3 gap-8 min-w-0">
                   {/* Main Content */}
-                  <div className="lg:col-span-2 space-y-6">
+                  <div className="lg:col-span-2 space-y-6 min-w-0">
                     {/* Photos */}
                     <ListingPhotosGallery
                       name={selectedListing.name}
@@ -1482,7 +1482,7 @@ export default function Home({
                             dangerouslySetInnerHTML={{ __html: selectedListing.description }}
                           />
                         ) : (
-                          <p className="text-muted-foreground leading-relaxed">{selectedListing.description}</p>
+                        <p className="text-muted-foreground leading-relaxed">{selectedListing.description}</p>
                         )}
                       </CardContent>
                     </Card>
