@@ -28,7 +28,9 @@ export interface WordPressListingImportResult {
   errors: string[]
 }
 
-const LISTING_MEDIA_DIR = path.join('public', 'uploads', 'listings', 'imported')
+import { resolveUploadDir } from '@/lib/upload-paths'
+
+const LISTING_MEDIA_DIR = resolveUploadDir('listings', 'imported')
 
 function resolveAttachmentUrl(
   attachmentId: string | undefined,

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { mkdir, writeFile } from 'fs/promises'
 import path from 'path'
 import { isAuthenticated } from '@/lib/admin-auth'
+import { resolveUploadDir, uploadPublicUrl } from '@/lib/upload-paths'
 
 const ALLOWED_TYPES = new Set([
   'image/jpeg',
@@ -36,10 +37,10 @@ export async function POST(req: NextRequest) {
   const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
   const safeExt = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'ico'].includes(ext) ? ext : 'jpg'
   const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${safeExt}`
-  const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'blog')
+  const uploadDir = resolveUploadDir('blog')
 
   await mkdir(uploadDir, { recursive: true })
   await writeFile(path.join(uploadDir, filename), Buffer.from(await file.arrayBuffer()))
 
-  return NextResponse.json({ url: `/uploads/blog/${filename}` })
+  return NextResponse.json({ url: uploadPublicUrl('blog', filename) })
 }

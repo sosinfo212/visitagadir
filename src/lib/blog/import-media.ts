@@ -1,8 +1,9 @@
 import crypto from 'crypto'
 import { mkdir, writeFile } from 'fs/promises'
 import path from 'path'
+import { getUploadsRoot, resolveUploadDir } from '@/lib/upload-paths'
 
-const DEFAULT_UPLOAD_SUBDIR = path.join('public', 'uploads', 'blog', 'imported')
+const DEFAULT_UPLOAD_SUBDIR = resolveUploadDir('blog', 'imported')
 const MAX_BYTES = 15 * 1024 * 1024
 const CONCURRENCY = 5
 
@@ -83,12 +84,15 @@ export class MediaImporter {
   private readonly publicPathPrefix: string
 
   constructor(options?: { uploadSubdir?: string }) {
-    const subdir = options?.uploadSubdir ?? DEFAULT_UPLOAD_SUBDIR
-    this.uploadSubdir = path.isAbsolute(subdir)
-      ? subdir
-      : path.join(process.cwd(), subdir)
-    const relative = path.relative(path.join(process.cwd(), 'public'), this.uploadSubdir)
-    this.publicPathPrefix = `/${relative.split(path.sep).join('/')}`
+    if (options?.uploadSubdir) {
+      this.uploadSubdir = path.isAbsolute(options.uploadSubdir)
+        ? options.uploadSubdir
+        : path.join(process.cwd(), options.uploadSubdir)
+    } else {
+      this.uploadSubdir = DEFAULT_UPLOAD_SUBDIR
+    }
+    const relative = path.relative(getUploadsRoot(), this.uploadSubdir)
+    this.publicPathPrefix = `/uploads/${relative.split(path.sep).join('/')}`
   }
 
   getStats() {

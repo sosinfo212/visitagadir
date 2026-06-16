@@ -3,8 +3,9 @@ import { db } from '@/lib/db'
 import { MediaImporter } from '@/lib/blog/import-media'
 import { splitImagesForStorage } from '@/lib/listing-images'
 import { buildListingPayload, type ListingPayloadInput } from '@/lib/listing-payload'
+import { resolveUploadDir } from '@/lib/upload-paths'
 
-const LISTING_MEDIA_DIR = path.join('public', 'uploads', 'listings', 'imported')
+const LISTING_MEDIA_DIR = resolveUploadDir('listings', 'imported')
 
 export interface ExtensionReviewInput {
   authorName: string

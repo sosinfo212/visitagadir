@@ -3,6 +3,7 @@ import { mkdir, writeFile } from 'fs/promises'
 import path from 'path'
 import crypto from 'crypto'
 import { isExtensionAuthorized } from '@/lib/extension-auth'
+import { resolveUploadDir, uploadPublicUrl } from '@/lib/upload-paths'
 
 const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
 const MAX_BYTES = 8 * 1024 * 1024
@@ -31,12 +32,12 @@ export async function POST(request: NextRequest) {
     const ext = file.type.split('/')[1]?.replace('jpeg', 'jpg') || 'jpg'
     const hash = crypto.createHash('sha1').update(`${Date.now()}-${file.name}`).digest('hex').slice(0, 10)
     const filename = `${hash}-place.${ext}`
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'listings', 'imported')
+    const uploadDir = resolveUploadDir('listings', 'imported')
 
     await mkdir(uploadDir, { recursive: true })
     await writeFile(path.join(uploadDir, filename), Buffer.from(await file.arrayBuffer()))
 
-    return NextResponse.json({ url: `/uploads/listings/imported/${filename}` })
+    return NextResponse.json({ url: uploadPublicUrl('listings', 'imported', filename) })
   } catch (error) {
     console.error('Extension upload error:', error)
     return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
