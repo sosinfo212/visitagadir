@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import {
-  Settings, Save, Loader2, CheckCircle2, AlertCircle, Lock, User, Globe,
+  Settings, Save, Loader2, CheckCircle2, AlertCircle, Lock, User, Globe, FileCode, RefreshCw, ExternalLink,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -23,6 +23,15 @@ interface AppSettingsForm {
   adminName: string
   adminEmail: string
   hasCustomPassword: boolean
+}
+
+interface ListingsXmlStatus {
+  feedUrl: string
+  fileExists: boolean
+  listingCount: number
+  generatedAt: string | null
+  fileSize: number | null
+  livePublishedCount: number
 }
 
 const EMPTY_FORM: AppSettingsForm = {
@@ -48,6 +57,11 @@ export default function AdminSettingsPage() {
   const [saving, setSaving] = useState(false)
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [error, setError] = useState('')
+  const [xmlStatus, setXmlStatus] = useState<ListingsXmlStatus | null>(null)
+  const [xmlLoading, setXmlLoading] = useState(true)
+  const [xmlRegenerating, setXmlRegenerating] = useState(false)
+  const [xmlMessage, setXmlMessage] = useState('')
+  const [xmlError, setXmlError] = useState('')
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -67,6 +81,55 @@ export default function AdminSettingsPage() {
   useEffect(() => {
     load()
   }, [load])
+
+  const loadXmlStatus = useCallback(async () => {
+    setXmlLoading(true)
+    setXmlError('')
+    try {
+      const res = await fetch('/api/admin/listings/xml')
+      if (!res.ok) throw new Error('Failed to load listings XML status')
+      setXmlStatus(await res.json())
+    } catch (e) {
+      setXmlError(e instanceof Error ? e.message : 'Failed to load listings XML status')
+    } finally {
+      setXmlLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadXmlStatus()
+  }, [loadXmlStatus])
+
+  async function handleRegenerateListingsXml() {
+    setXmlRegenerating(true)
+    setXmlError('')
+    setXmlMessage('')
+    try {
+      const res = await fetch('/api/admin/listings/xml', { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to regenerate listings XML')
+
+      setXmlStatus(data)
+      setXmlMessage(`Regenerated ${data.listingCount} published listing${data.listingCount === 1 ? '' : 's'}.`)
+    } catch (e) {
+      setXmlError(e instanceof Error ? e.message : 'Failed to regenerate listings XML')
+    } finally {
+      setXmlRegenerating(false)
+    }
+  }
+
+  function formatXmlDate(value: string | null) {
+    if (!value) return 'Never'
+    const date = new Date(value)
+    if (Number.isNaN(date.getTime())) return value
+    return date.toLocaleString()
+  }
+
+  function formatFileSize(bytes: number | null) {
+    if (bytes == null) return '—'
+    if (bytes < 1024) return `${bytes} B`
+    return `${(bytes / 1024).toFixed(1)} KB`
+  }
 
   function setField<K extends keyof AppSettingsForm>(key: K, value: AppSettingsForm[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -310,6 +373,87 @@ export default function AdminSettingsPage() {
                 </p>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <FileCode className="h-4 w-4 text-blue-600" />
+              Listings XML feed
+            </CardTitle>
+            <CardDescription>
+              Published listings are exported to <code className="text-xs bg-muted px-1 py-0.5 rounded">/listings.xml</code>.
+              The live feed also rebuilds from the database on each request; use regenerate to refresh the saved file immediately.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {xmlLoading ? (
+              <div className="flex items-center text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Loading feed status...
+              </div>
+            ) : (
+              <div className="grid sm:grid-cols-2 gap-3 text-sm">
+                <div className="rounded-lg border bg-muted/20 px-3 py-2">
+                  <p className="text-xs text-muted-foreground">Published listings</p>
+                  <p className="font-medium">{xmlStatus?.livePublishedCount ?? '—'}</p>
+                </div>
+                <div className="rounded-lg border bg-muted/20 px-3 py-2">
+                  <p className="text-xs text-muted-foreground">Last saved file</p>
+                  <p className="font-medium">{formatXmlDate(xmlStatus?.generatedAt ?? null)}</p>
+                </div>
+                <div className="rounded-lg border bg-muted/20 px-3 py-2">
+                  <p className="text-xs text-muted-foreground">Saved file size</p>
+                  <p className="font-medium">{formatFileSize(xmlStatus?.fileSize ?? null)}</p>
+                </div>
+                <div className="rounded-lg border bg-muted/20 px-3 py-2">
+                  <p className="text-xs text-muted-foreground">Feed URL</p>
+                  <a
+                    href={xmlStatus?.feedUrl || '/listings.xml'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-orange-600 hover:underline inline-flex items-center gap-1"
+                  >
+                    Open feed
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                </div>
+              </div>
+            )}
+
+            {xmlMessage && (
+              <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
+                <CheckCircle2 className="h-4 w-4 shrink-0" />
+                {xmlMessage}
+              </div>
+            )}
+
+            {xmlError && (
+              <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                {xmlError}
+              </div>
+            )}
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleRegenerateListingsXml}
+              disabled={xmlRegenerating || xmlLoading}
+            >
+              {xmlRegenerating ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Regenerating...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Regenerate listings XML
+                </>
+              )}
+            </Button>
           </CardContent>
         </Card>
 
