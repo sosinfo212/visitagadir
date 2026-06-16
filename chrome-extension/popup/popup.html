@@ -42,10 +42,31 @@
     </section>
 
     <section class="panel">
-      <button type="button" id="scrapeBtn" class="primary">1. Scanner cette fiche</button>
-      <button type="button" id="importBtn" class="primary" disabled>2. Envoyer à l’app</button>
-      <p id="status" class="status" role="status"></p>
+      <h2 class="section-title">Import multiple</h2>
+      <p class="hint">
+        Sur une page de résultats Google Maps, faites défiler pour charger plus de lieux, puis listez et cochez ceux à importer.
+      </p>
+      <button type="button" id="listPlacesBtn" class="secondary">Lister les lieux visibles</button>
+      <div id="placesPanel" hidden>
+        <div class="places-toolbar">
+          <label class="checkbox-row">
+            <input id="selectAllPlaces" type="checkbox" />
+            Tout sélectionner
+          </label>
+          <span id="placesCount" class="places-count"></span>
+        </div>
+        <ul id="placesList" class="places-list"></ul>
+        <button type="button" id="batchImportBtn" class="primary" disabled>Importer la sélection</button>
+      </div>
     </section>
+
+    <section class="panel">
+      <h2 class="section-title">Import unique</h2>
+      <button type="button" id="scrapeBtn" class="secondary">Scanner la fiche ouverte</button>
+      <button type="button" id="importBtn" class="primary" disabled>Envoyer à l’app</button>
+    </section>
+
+    <p id="status" class="status" role="status"></p>
 
     <section class="panel preview" id="preview" hidden>
       <h2>Aperçu</h2>
@@ -57,6 +78,11 @@
         <div><dt>Photos</dt><dd id="pv-images"></dd></div>
         <div><dt>Avis capturés</dt><dd id="pv-reviews"></dd></div>
       </dl>
+    </section>
+
+    <section class="panel batch-results" id="batchResults" hidden>
+      <h2>Résultats import</h2>
+      <ul id="batchResultsList"></ul>
     </section>
 
     <script type="module" src="popup.js"></script>

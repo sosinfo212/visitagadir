@@ -1,5 +1,13 @@
 import { loadSettings, saveSettings, clearSettings } from '../lib/storage.js'
-import { fetchCategories, importListing, scrapeActiveTab } from '../lib/api-client.js'
+import {
+  fetchCategories,
+  importListing,
+  scrapeActiveTab,
+  listPlacesOnActiveTab,
+  startBatchImport,
+  waitForBatchComplete,
+  getBatchStatus,
+} from '../lib/api-client.js'
 import { uploadPlaceImages } from '../lib/image-uploader.js'
 
 /** Must match EXTENSION_API_KEY in project .env for local dev */
@@ -7,6 +15,12 @@ const LOCAL_DEV_KEY = 'agadir-extension-api-key-change-in-production'
 
 /** @type {import('../lib/types.js').ScrapedPlace | null} */
 let scraped = null
+
+/** @type {import('../lib/types.js').PlaceListItem[]} */
+let listedPlaces = []
+
+/** @type {number | null} */
+let mapsTabId = null
 
 const els = {
   apiBaseUrl: document.getElementById('apiBaseUrl'),
@@ -18,6 +32,12 @@ const els = {
   saveSettings: document.getElementById('saveSettings'),
   loadCategories: document.getElementById('loadCategories'),
   resetSettings: document.getElementById('resetSettings'),
+  listPlacesBtn: document.getElementById('listPlacesBtn'),
+  placesPanel: document.getElementById('placesPanel'),
+  selectAllPlaces: document.getElementById('selectAllPlaces'),
+  placesCount: document.getElementById('placesCount'),
+  placesList: document.getElementById('placesList'),
+  batchImportBtn: document.getElementById('batchImportBtn'),
   scrapeBtn: document.getElementById('scrapeBtn'),
   importBtn: document.getElementById('importBtn'),
   status: document.getElementById('status'),
@@ -28,6 +48,8 @@ const els = {
   pvRating: document.getElementById('pv-rating'),
   pvImages: document.getElementById('pv-images'),
   pvReviews: document.getElementById('pv-reviews'),
+  batchResults: document.getElementById('batchResults'),
+  batchResultsList: document.getElementById('batchResultsList'),
 }
 
 function setStatus(message, type = '') {
@@ -67,12 +89,104 @@ function renderPreview(data) {
   els.pvReviews.textContent = String(data.reviews?.length ?? 0)
 }
 
+function getSelectedPlaces() {
+  const checked = new Set(
+    [...els.placesList.querySelectorAll('input[type="checkbox"]:checked')].map(
+      (input) => input.value,
+    ),
+  )
+  return listedPlaces.filter((place) => checked.has(place.id))
+}
+
+function updatePlacesSelectionUi() {
+  const selected = getSelectedPlaces()
+  els.placesCount.textContent = `${selected.length} / ${listedPlaces.length} sélectionné(s)`
+  els.batchImportBtn.disabled = selected.length === 0
+  els.selectAllPlaces.checked =
+    listedPlaces.length > 0 && selected.length === listedPlaces.length
+}
+
+function renderPlacesList(places) {
+  listedPlaces = places
+  els.placesList.innerHTML = ''
+
+  for (const place of places) {
+    const li = document.createElement('li')
+    li.className = 'place-item'
+
+    const label = document.createElement('label')
+    label.className = 'place-row'
+
+    const checkbox = document.createElement('input')
+    checkbox.type = 'checkbox'
+    checkbox.value = place.id
+    checkbox.checked = true
+    checkbox.addEventListener('change', updatePlacesSelectionUi)
+
+    const meta = document.createElement('span')
+    meta.className = 'place-meta'
+
+    const name = document.createElement('span')
+    name.className = 'place-name'
+    name.textContent = place.name
+
+    const details = document.createElement('span')
+    details.className = 'place-details'
+    const parts = []
+    if (place.rating != null) parts.push(`★ ${place.rating}`)
+    if (place.address) parts.push(place.address)
+    if (place.isCurrent) parts.push('(fiche ouverte)')
+    details.textContent = parts.join(' · ')
+
+    meta.append(name, details)
+    label.append(checkbox, meta)
+    li.append(label)
+    els.placesList.append(li)
+  }
+
+  els.placesPanel.hidden = places.length === 0
+  updatePlacesSelectionUi()
+}
+
+function renderBatchResults(progress) {
+  els.batchResults.hidden = false
+  els.batchResultsList.innerHTML = ''
+
+  for (const item of progress.results || []) {
+    const li = document.createElement('li')
+    li.className = 'batch-ok'
+    li.textContent = `✓ ${item.name} — ${item.reviewsCreated ?? 0} avis`
+    if (item.url) {
+      const link = document.createElement('a')
+      link.href = item.url
+      link.target = '_blank'
+      link.rel = 'noopener'
+      link.textContent = ' Ouvrir'
+      li.append(link)
+    }
+    els.batchResultsList.append(li)
+  }
+
+  for (const item of progress.errors || []) {
+    const li = document.createElement('li')
+    li.className = 'batch-err'
+    li.textContent = `✗ ${item.name} — ${item.error}`
+    els.batchResultsList.append(li)
+  }
+}
+
+function setBatchUiBusy(busy) {
+  els.listPlacesBtn.disabled = busy
+  els.batchImportBtn.disabled = busy || getSelectedPlaces().length === 0
+  els.scrapeBtn.disabled = busy
+  els.importBtn.disabled = busy || !scraped
+}
+
 async function initSettings() {
   const settings = await loadSettings()
   els.apiBaseUrl.value = settings.apiBaseUrl
   els.extensionKey.value = settings.extensionKey
   updateLocalHintVisibility()
-  // Do not auto-fetch categories — stale chrome.storage keys caused 401 on open
 }
 
 async function loadCategoryOptions(selectedId = '') {
@@ -138,10 +252,93 @@ els.resetSettings.addEventListener('click', async () => {
   els.showKey.checked = false
   els.extensionKey.type = 'password'
   scraped = null
+  listedPlaces = []
+  mapsTabId = null
   els.preview.hidden = true
+  els.placesPanel.hidden = true
+  els.batchResults.hidden = true
   els.importBtn.disabled = true
   updateLocalHintVisibility()
   setStatus('Paramètres réinitialisés. Collez la clé locale puis rechargez les catégories.', 'success')
+})
+
+els.selectAllPlaces.addEventListener('change', () => {
+  const checked = els.selectAllPlaces.checked
+  for (const input of els.placesList.querySelectorAll('input[type="checkbox"]')) {
+    input.checked = checked
+  }
+  updatePlacesSelectionUi()
+})
+
+els.listPlacesBtn.addEventListener('click', async () => {
+  setStatus('Recherche des lieux sur la page…')
+  els.listPlacesBtn.disabled = true
+  try {
+    const { tabId, places } = await listPlacesOnActiveTab()
+    mapsTabId = tabId
+    if (places.length === 0) {
+      setStatus('Aucun lieu trouvé. Ouvrez une recherche Google Maps et faites défiler la liste.', 'error')
+      els.placesPanel.hidden = true
+      return
+    }
+    renderPlacesList(places)
+    setStatus(`${places.length} lieu(x) trouvé(s). Cochez ceux à importer.`, 'success')
+  } catch (error) {
+    setStatus(error instanceof Error ? error.message : 'Impossible de lister les lieux', 'error')
+  } finally {
+    els.listPlacesBtn.disabled = false
+  }
+})
+
+els.batchImportBtn.addEventListener('click', async () => {
+  const categoryId = els.defaultCategoryId.value
+  if (!categoryId) {
+    setStatus('Choisissez une catégorie par défaut.', 'error')
+    return
+  }
+
+  const selected = getSelectedPlaces()
+  if (selected.length === 0) {
+    setStatus('Sélectionnez au moins un lieu.', 'error')
+    return
+  }
+
+  if (mapsTabId == null) {
+    setStatus('Relancez « Lister les lieux visibles ».', 'error')
+    return
+  }
+
+  setBatchUiBusy(true)
+  els.batchResults.hidden = true
+  setStatus(`Import de ${selected.length} lieu(x)… Ne fermez pas l’onglet Maps.`)
+
+  const keepAlivePort = chrome.runtime.connect({ name: 'batch-keepalive' })
+
+  try {
+    await startBatchImport(
+      mapsTabId,
+      selected,
+      categoryId,
+      readFormConfig(),
+    )
+
+    const progress = await waitForBatchComplete((p) => {
+      if (p.current) {
+        setStatus(`Import ${p.done + 1}/${p.total} — ${p.current}…`)
+      }
+    })
+
+    renderBatchResults(progress)
+    const ok = progress.results?.length ?? 0
+    const fail = progress.errors?.length ?? 0
+    setStatus(`Terminé : ${ok} importé(s), ${fail} erreur(s).`, fail ? 'error' : 'success')
+  } catch (error) {
+    setStatus(error instanceof Error ? error.message : 'Import batch échoué', 'error')
+  } finally {
+    keepAlivePort.disconnect()
+    setBatchUiBusy(false)
+    updatePlacesSelectionUi()
+  }
 })
 
 els.scrapeBtn.addEventListener('click', async () => {
@@ -223,4 +420,43 @@ els.importBtn.addEventListener('click', async () => {
   }
 })
 
+chrome.runtime.onMessage.addListener((message) => {
+  if (message?.type !== 'BATCH_PROGRESS' || !message.progress) return
+  const { done, total, current } = message.progress
+  if (current) {
+    setStatus(`Import ${done + 1}/${total} — ${current}…`)
+  }
+})
+
+async function restoreBatchStatus() {
+  const status = await getBatchStatus()
+  if (!status.running) {
+    if (status.progress && (status.progress.results?.length || status.progress.errors?.length)) {
+      renderBatchResults(status.progress)
+      const ok = status.progress.results?.length ?? 0
+      const fail = status.progress.errors?.length ?? 0
+      setStatus(`Dernier import : ${ok} importé(s), ${fail} erreur(s).`, fail ? 'error' : 'success')
+    }
+    return
+  }
+
+  setBatchUiBusy(true)
+  try {
+    const progress = await waitForBatchComplete((p) => {
+      if (p.current) {
+        setStatus(`Import ${p.done + 1}/${p.total} — ${p.current}…`)
+      }
+    })
+    renderBatchResults(progress)
+    const ok = progress.results?.length ?? 0
+    const fail = progress.errors?.length ?? 0
+    setStatus(`Terminé : ${ok} importé(s), ${fail} erreur(s).`, fail ? 'error' : 'success')
+  } catch {
+    setStatus('Import interrompu — rouvrez la popup pour voir l’état.', 'error')
+  } finally {
+    setBatchUiBusy(false)
+  }
+}
+
 initSettings()
+restoreBatchStatus()

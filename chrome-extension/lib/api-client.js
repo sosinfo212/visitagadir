@@ -1,4 +1,5 @@
 import { loadSettings } from '../lib/storage.js'
+import { sendTabMessage } from './tab-messages.js'
 
 const KEY_HEADER = 'X-Extension-Key'
 
@@ -73,12 +74,102 @@ export async function scrapeActiveTab() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
   if (!tab?.id) throw new Error('Aucun onglet actif')
   if (!tab.url?.includes('google.com/maps')) {
-    throw new Error('Ouvrez d’abord une fiche Google Maps')
+    throw new Error('Ouvrez d’abord Google Maps (recherche ou fiche lieu)')
   }
 
-  const response = await chrome.tabs.sendMessage(tab.id, { type: 'SCRAPE_PLACE' })
+  const response = await sendTabMessage(tab.id, { type: 'SCRAPE_PLACE' })
   if (!response?.ok) {
     throw new Error(response?.error || 'Échec du scraping')
   }
   return response.data
+}
+
+/**
+ * @returns {Promise<{ tabId: number; places: import('../lib/types.js').PlaceListItem[] }>}
+ */
+export async function listPlacesOnActiveTab() {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+  if (!tab?.id) throw new Error('Aucun onglet actif')
+  if (!tab.url?.includes('google.com/maps')) {
+    throw new Error('Ouvrez d’abord Google Maps avec une liste de résultats')
+  }
+
+  const response = await sendTabMessage(tab.id, { type: 'LIST_PLACES' })
+  if (!response?.ok) {
+    throw new Error(response?.error || 'Impossible de lister les lieux')
+  }
+  return { tabId: tab.id, places: response.data || [] }
+}
+
+/**
+ * @param {number} tabId
+ * @param {import('../lib/types.js').PlaceListItem[]} places
+ * @param {string} categoryId
+ * @param {ApiConfig | null} configOverride
+ */
+export function startBatchImport(tabId, places, categoryId, configOverride = null) {
+  return resolveConfig(configOverride).then(
+    (config) =>
+      new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage(
+          {
+            type: 'BATCH_IMPORT',
+            tabId,
+            places,
+            categoryId,
+            config,
+          },
+          (response) => {
+            if (chrome.runtime.lastError) {
+              reject(new Error(chrome.runtime.lastError.message))
+              return
+            }
+            if (!response?.ok) {
+              reject(new Error(response?.error || 'Import batch échoué'))
+              return
+            }
+            resolve(response)
+          },
+        )
+      }),
+  )
+}
+
+/**
+ * Poll until the background batch import finishes.
+ * @param {(progress: object) => void} [onProgress]
+ */
+export function waitForBatchComplete(onProgress) {
+  return new Promise((resolve, reject) => {
+    const poll = async () => {
+      try {
+        const status = await getBatchStatus()
+        if (status.progress && onProgress) onProgress(status.progress)
+        if (status.running) {
+          setTimeout(poll, 500)
+          return
+        }
+        if (status.progress) {
+          resolve(status.progress)
+          return
+        }
+        reject(new Error('Import interrompu'))
+      } catch (error) {
+        reject(error instanceof Error ? error : new Error('Import interrompu'))
+      }
+    }
+    poll()
+  })
+}
+
+/** @returns {Promise<{ running: boolean; progress: object | null }>} */
+export function getBatchStatus() {
+  return new Promise((resolve) => {
+    chrome.runtime.sendMessage({ type: 'GET_BATCH_STATUS' }, (response) => {
+      resolve({
+        running: Boolean(response?.running),
+        progress: response?.progress ?? null,
+      })
+    })
+  })
 }

@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { X } from 'lucide-react'
+import { isHtmlContent } from '@/lib/blog/html'
+import { sanitizeAgentHtml } from '@/lib/chat/sanitize-agent-html'
 import {
   type ChatMessage,
   DEFAULT_CHAT_MESSAGES,
@@ -15,6 +17,19 @@ type ChatBotProps = {
   isOpen?: boolean
   onClose?: () => void
   onUnread?: () => void
+}
+
+function BotMessageContent({ text }: { text: string }) {
+  if (!isHtmlContent(text)) {
+    return <>{text}</>
+  }
+
+  return (
+    <div
+      className="chat-agent-html space-y-2 [&_a]:text-violet-700 [&_a]:underline [&_ol]:list-decimal [&_ol]:pl-4 [&_p+p]:mt-2 [&_ul]:list-disc [&_ul]:pl-4"
+      dangerouslySetInnerHTML={{ __html: sanitizeAgentHtml(text) }}
+    />
+  )
 }
 
 export default function ChatBot({ isOpen = true, onClose, onUnread }: ChatBotProps) {
@@ -127,7 +142,7 @@ export default function ChatBot({ isOpen = true, onClose, onUnread }: ChatBotPro
                   : 'bg-gray-100 text-gray-800 rounded-bl-sm'
               }`}
             >
-              {m.text}
+              {m.role === 'user' ? m.text : <BotMessageContent text={m.text} />}
             </div>
           </div>
         ))}

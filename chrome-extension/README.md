@@ -26,15 +26,32 @@ Endpoints utilisés :
 3. **Charger l’extension non empaquetée**
 4. Sélectionnez ce dossier : `chrome-extension/`
 
+## Utilisation
+
+### Import multiple (recommandé)
+
+1. Ouvrez une **recherche** Google Maps (ex. « restaurants Agadir »)
+2. Faites défiler la liste à gauche pour charger plus de résultats
+3. Cliquez l’icône de l’extension
+4. Configurez URL, clé API et catégorie (voir ci-dessous)
+5. **Lister les lieux visibles** → cochez les fiches à importer
+6. **Importer la sélection** — l’extension ouvre chaque fiche, scanne et envoie les données
+
+L’import batch navigue dans l’onglet Maps : ne fermez pas cet onglet pendant l’import.
+
+### Import unique (fiche ouverte)
+
+1. Ouvrez la fiche complète d’un lieu sur Google Maps
+2. **Scanner la fiche ouverte** → **Envoyer à l’app**
+
 ## Configuration
 
-1. Ouvrez une fiche lieu sur [Google Maps](https://www.google.com/maps)
+1. Ouvrez Google Maps (recherche ou fiche lieu)
 2. Cliquez l’icône de l’extension
 3. Renseignez :
    - **URL de l’app** — ex. `http://localhost:3000` ou `https://www.visitagadir.info`
    - **Clé API extension** — même valeur que `EXTENSION_API_KEY`
    - **Catégorie par défaut** — cliquez *Enregistrer*, puis choisissez une catégorie
-4. **Scanner cette fiche** → **Envoyer à l’app**
 
 ## Conseils scraping Google Maps
 
@@ -53,6 +70,9 @@ chrome-extension/
 │   └── google-maps.js     # Scraper (content script)
 ├── lib/
 │   ├── api-client.js      # Appels API Visit Agadir
+│   ├── batch-import.js    # Import séquentiel multi-lieux
+│   ├── import-one.js      # Import d’une fiche scannée
+│   ├── image-uploader.js
 │   ├── storage.js         # chrome.storage.sync
 │   └── types.js           # JSDoc types
 ├── popup/

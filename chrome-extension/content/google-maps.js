@@ -665,7 +665,10 @@ function scrapePlace() {
 async function scrapePlaceAsync() {
   await delay(400)
 
-  const detailRoot = getPlaceDetailRoot()
+  let detailRoot = getPlaceDetailRoot()
+  if (!detailRoot) {
+    detailRoot = await waitForDetailRoot(15000)
+  }
   if (!detailRoot) {
     throw new Error(
       'Ouvrez la fiche détaillée du lieu (cliquez sur le commerce dans la liste), puis rescannez.',
@@ -693,7 +696,151 @@ async function scrapePlaceAsync() {
   return core
 }
 
+async function waitForDetailRoot(maxMs = 15000) {
+  const start = Date.now()
+  while (Date.now() - start < maxMs) {
+    const root = getPlaceDetailRoot()
+    if (root) return root
+    await delay(500)
+  }
+  return null
+}
+
+function normalizeMapsHref(href) {
+  try {
+    return new URL(href, location.origin).href
+  } catch {
+    return href
+  }
+}
+
+function placeIdFromUrl(url) {
+  const normalized = normalizeMapsHref(url)
+  const fromUrl = extractPlaceIdFromUrl(normalized)
+  if (fromUrl) {
+    return fromUrl.replace(/[^a-zA-Z0-9]/g, '').slice(0, 32)
+  }
+  try {
+    const pathMatch = new URL(normalized).pathname.match(/\/place\/([^/@]+)/)
+    if (pathMatch) {
+      return decodeURIComponent(pathMatch[1].replace(/\+/g, ' '))
+        .replace(/\W+/g, '-')
+        .slice(0, 40)
+    }
+    return btoa(encodeURIComponent(normalized)).replace(/[^a-zA-Z0-9]/g, '').slice(0, 24)
+  } catch {
+    return normalized.slice(-24)
+  }
+}
+
+async function scrollSearchFeedBriefly() {
+  const feed = document.querySelector('[role="feed"]')
+  if (!feed) return
+  for (let i = 0; i < 4; i += 1) {
+    feed.scrollTop += 700
+    await delay(350)
+  }
+}
+
+function listPlacesOnPage() {
+  const places = []
+  const seen = new Set()
+
+  function addPlace(item) {
+    const key = item.mapsUrl || item.name
+    if (!key || seen.has(key)) return
+    seen.add(key)
+    places.push(item)
+  }
+
+  function cardFromLink(link) {
+    return (
+      link.closest('.Nv2PK') ||
+      link.closest('.lI9IFe') ||
+      link.closest('[jsaction*="mouseover"]') ||
+      link.parentElement?.parentElement
+    )
+  }
+
+  const feedLinks = document.querySelectorAll(
+    '[role="feed"] a.hfpxzc[href*="/maps"], [role="feed"] a[href*="/maps/place/"]',
+  )
+
+  for (const link of feedLinks) {
+    const card = cardFromLink(link)
+    const label = link.getAttribute('aria-label') || ''
+    const name =
+      text(card?.querySelector('.qBF1Pd, .fontHeadlineSmall, .NrDZNb')) ||
+      label.split('·')[0].split(',')[0].trim()
+    if (!name || isGenericPlaceName(name)) continue
+
+    const ratingEl = card?.querySelector(
+      'span[role="img"][aria-label*="star" i], span[role="img"][aria-label*="étoile" i], span[role="img"][aria-label*="stars" i]',
+    )
+    const rating = ratingEl
+      ? parseRatingLabel(ratingEl.getAttribute('aria-label') || '')
+      : null
+
+    const address = card
+      ? [...card.querySelectorAll('.W4Efsd, .W4Efsd span')]
+          .map(text)
+          .filter(Boolean)
+          .join(' · ')
+          .slice(0, 140)
+      : ''
+
+    addPlace({
+      id: placeIdFromUrl(link.href),
+      name,
+      address,
+      rating,
+      mapsUrl: normalizeMapsHref(link.href),
+    })
+  }
+
+  const detailRoot = getPlaceDetailRoot()
+  if (detailRoot) {
+    try {
+      const name = extractName()
+      addPlace({
+        id: placeIdFromUrl(location.href),
+        name,
+        address: extractAddress() || '',
+        rating: null,
+        mapsUrl: normalizeMapsHref(location.href),
+        isCurrent: true,
+      })
+    } catch {
+      /* no open detail */
+    }
+  }
+
+  return places
+}
+
+async function listPlacesAsync() {
+  await scrollSearchFeedBriefly()
+  return listPlacesOnPage()
+}
+
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (message?.type === 'PING') {
+    sendResponse({ ok: true })
+    return false
+  }
+
+  if (message?.type === 'LIST_PLACES') {
+    listPlacesAsync()
+      .then((data) => sendResponse({ ok: true, data }))
+      .catch((error) => {
+        sendResponse({
+          ok: false,
+          error: error instanceof Error ? error.message : 'Liste impossible',
+        })
+      })
+    return true
+  }
+
   if (message?.type !== 'SCRAPE_PLACE') return
 
   scrapePlaceAsync()

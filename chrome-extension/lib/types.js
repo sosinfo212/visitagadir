@@ -5,6 +5,14 @@
  * @property {number} rating
  * @property {string} comment
  *
+ * @typedef {Object} PlaceListItem
+ * @property {string} id
+ * @property {string} name
+ * @property {string} [address]
+ * @property {number | null} [rating]
+ * @property {string} mapsUrl
+ * @property {boolean} [isCurrent]
+ *
  * @typedef {Object} ScrapedPlace
  * @property {string} name
  * @property {string} description
