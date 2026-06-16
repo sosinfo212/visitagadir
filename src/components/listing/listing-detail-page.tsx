@@ -59,7 +59,7 @@ function RelatedList({ title, items }: { title: string; items: ListingBundle['re
 export function ListingDetailPage({ bundle }: { bundle: ListingBundle }) {
   const { listing, images, breadcrumbs, related, sameCity, nearby } = bundle
   const rating = listing.rating || 0
-  const reviewCount = listing.reviewCount || 0
+  const reviewCount = listing.reviewCount || listing.reviews?.length || 0
   const heroImage = images[0]
 
   return (

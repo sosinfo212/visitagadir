@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Visit Agadir Importer</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Visit Agadir</h1>
+      <p class="subtitle">Importer depuis Google Maps</p>
+    </header>
+
+    <section class="panel" id="settings-panel">
+      <label>
+        URL de l’app
+        <input id="apiBaseUrl" type="url" placeholder="http://localhost:3000" />
+      </label>
+      <label>
+        Clé API extension
+        <input id="extensionKey" type="password" placeholder="agadir-extension-api-key-change-in-production" autocomplete="off" spellcheck="false" />
+      </label>
+      <label class="checkbox-row">
+        <input id="showKey" type="checkbox" />
+        Afficher la clé
+      </label>
+      <p class="hint" id="localKeyHint">
+        Clé locale (.env) :
+        <code>agadir-extension-api-key-change-in-production</code>
+        <button type="button" id="pasteLocalKey" class="link-btn">Coller</button>
+      </p>
+      <label>
+        Catégorie par défaut
+        <select id="defaultCategoryId">
+          <option value="">— Charger les catégories —</option>
+        </select>
+      </label>
+      <button type="button" id="saveSettings" class="secondary">Enregistrer</button>
+      <button type="button" id="loadCategories" class="secondary">Charger les catégories</button>
+      <button type="button" id="resetSettings" class="secondary danger">Réinitialiser</button>
+    </section>
+
+    <section class="panel">
+      <button type="button" id="scrapeBtn" class="primary">1. Scanner cette fiche</button>
+      <button type="button" id="importBtn" class="primary" disabled>2. Envoyer à l’app</button>
+      <p id="status" class="status" role="status"></p>
+    </section>
+
+    <section class="panel preview" id="preview" hidden>
+      <h2>Aperçu</h2>
+      <dl>
+        <div><dt>Nom</dt><dd id="pv-name"></dd></div>
+        <div><dt>Adresse</dt><dd id="pv-address"></dd></div>
+        <div><dt>Téléphone</dt><dd id="pv-phone"></dd></div>
+        <div><dt>Note Google</dt><dd id="pv-rating"></dd></div>
+        <div><dt>Photos</dt><dd id="pv-images"></dd></div>
+        <div><dt>Avis capturés</dt><dd id="pv-reviews"></dd></div>
+      </dl>
+    </section>
+
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

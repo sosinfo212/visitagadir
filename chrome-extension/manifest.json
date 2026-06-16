@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "Visit Agadir — Google Maps Importer",
+  "version": "0.1.3",
+  "description": "Scrape a Google Maps place and send it to the Visit Agadir directory.",
+  "permissions": ["storage", "activeTab", "scripting"],
+  "host_permissions": [
+    "https://www.google.com/maps/*",
+    "https://maps.google.com/*",
+    "https://*.googleusercontent.com/*",
+    "https://*.ggpht.com/*",
+    "http://localhost:3000/*",
+    "https://www.visitagadir.info/*",
+    "https://visitagadir.info/*"
+  ],
+  "action": {
+    "default_title": "Importer dans Visit Agadir",
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "128": "icons/icon.svg"
+    }
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.google.com/maps/*",
+        "https://maps.google.com/*"
+      ],
+      "js": ["content/google-maps.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "128": "icons/icon.svg"
+  }
+}
