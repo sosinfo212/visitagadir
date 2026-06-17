@@ -142,6 +142,8 @@ function InteractiveStarSelector({ value, onChange }: { value: number; onChange:
           key={star}
           type="button"
           className="focus:outline-none transition-transform hover:scale-110"
+          aria-label={`Rate ${star} star${star !== 1 ? 's' : ''}`}
+          aria-pressed={value === star}
           onMouseEnter={() => setHovered(star)}
           onMouseLeave={() => setHovered(0)}
           onClick={() => onChange(star)}
@@ -651,6 +653,8 @@ function AnimatedHeroSection({
             {categories.slice(0, 5).map((cat, i) => (
               <motion.button
                 key={cat.id}
+                type="button"
+                aria-label={cat.name}
                 onClick={() => handleCategoryClick(cat.slug)}
                 className="px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/15 text-white/90 text-sm hover:bg-white/20 hover:text-white transition-all duration-300 flex items-center gap-1.5"
                 whileHover={{ scale: 1.08, y: -2 }}
@@ -1161,8 +1165,8 @@ export default function Home({
                       <h2 className="text-2xl sm:text-3xl font-bold">Our Latest Posts</h2>
                       <p className="text-muted-foreground mt-1">Travel tips, guides, and stories from Agadir</p>
                     </div>
-                    <Link href="/blog">
-                      <Button variant="outline" size="sm" className="hidden sm:flex">
+                    <Link href="/blog" className="hidden sm:inline-flex">
+                      <Button variant="outline" size="sm">
                         View all posts
                         <ChevronRight className="h-4 w-4 ml-1" />
                       </Button>

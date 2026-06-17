@@ -16,6 +16,8 @@ function StarSelector({ value, onChange }: { value: number; onChange: (v: number
           key={star}
           type="button"
           className="focus:outline-none transition-transform hover:scale-110"
+          aria-label={`Rate ${star} star${star !== 1 ? 's' : ''}`}
+          aria-pressed={value === star}
           onMouseEnter={() => setHovered(star)}
           onMouseLeave={() => setHovered(0)}
           onClick={() => onChange(star)}

@@ -120,7 +120,7 @@ export function MultiImageInput({
                     className="h-6 w-6 bg-white/90 hover:bg-white"
                     onClick={() => moveTo(idx, idx - 1)}
                     disabled={idx === 0}
-                    title="Move up"
+                    aria-label="Move image up"
                   >
                     <ArrowUp className="h-3 w-3" />
                   </Button>
@@ -131,7 +131,7 @@ export function MultiImageInput({
                     className="h-6 w-6 bg-white/90 hover:bg-white"
                     onClick={() => moveTo(idx, idx + 1)}
                     disabled={idx === value.length - 1}
-                    title="Move down"
+                    aria-label="Move image down"
                   >
                     <ArrowDown className="h-3 w-3" />
                   </Button>
@@ -142,7 +142,7 @@ export function MultiImageInput({
                   variant="destructive"
                   className="h-6 w-6"
                   onClick={() => removeAt(idx)}
-                  title="Remove"
+                  aria-label="Remove image"
                 >
                   <X className="h-3 w-3" />
                 </Button>

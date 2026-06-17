@@ -16,7 +16,11 @@ export function BlogPostCard({ post }: { post: BlogPostCardData }) {
     <Card className="overflow-hidden hover:shadow-md transition-shadow">
       <CardContent className="p-0">
         <div className="block sm:flex">
-          <Link href={blogPostPath(post.slug)} className="sm:w-64 shrink-0 block">
+          <Link
+            href={blogPostPath(post.slug)}
+            className="sm:w-64 shrink-0 block"
+            aria-label={`Read article: ${post.title}`}
+          >
             <div className="relative aspect-[16/10] sm:aspect-auto sm:min-h-[180px] bg-gradient-to-br from-orange-100 to-amber-50">
               {post.coverImage ? (
                 <OptimizedImage
