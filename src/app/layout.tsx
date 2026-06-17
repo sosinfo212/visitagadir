@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
-import TrackingPixels from "@/components/tracking-pixels";
-import ChatBotWidget from "@/components/ChatBotWidget";
+import { DeferredClientWidgets } from "@/components/deferred-client-widgets";
 import { AuthSessionProvider } from "@/components/providers/session-provider";
 import { PublicChrome } from "@/components/public-chrome";
 import { getAppSettings, toPublicSettings, type AppSettingsPublic } from "@/lib/app-settings";
@@ -19,11 +18,13 @@ import { SchemaScript } from "@/components/seo/schema-script";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -75,8 +76,7 @@ export default async function RootLayout({
           <PublicChrome branding={branding}>{children}</PublicChrome>
         </AuthSessionProvider>
         <Toaster />
-        <ChatBotWidget />
-        <TrackingPixels />
+        <DeferredClientWidgets />
         {schemas.length > 0 && <SchemaScript data={schemas} />}
       </body>
     </html>
