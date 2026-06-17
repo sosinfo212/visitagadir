@@ -7,6 +7,7 @@ import { ListingReviewForm } from '@/components/listing/listing-review-form'
 import { ListingPhotosGallery } from '@/components/listing/listing-photos-gallery'
 import { listingWebsiteHref } from '@/lib/listing-contact'
 import { LISTING_DEFAULT_IMAGE } from '@/lib/listing-images'
+import { OptimizedImage } from '@/components/optimized-image'
 import type { getListingSeoBundle } from '@/lib/seo/service'
 
 type ListingBundle = NonNullable<Awaited<ReturnType<typeof getListingSeoBundle>>>
@@ -36,12 +37,15 @@ function RelatedList({ title, items }: { title: string; items: ListingBundle['re
               href={listingPath(item.slug)}
               className="flex items-center gap-3 group"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={item.image || LISTING_DEFAULT_IMAGE}
-                alt={item.name}
-                className="h-12 w-12 rounded-lg object-cover shrink-0 bg-gray-100"
-              />
+              <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-gray-100">
+                <OptimizedImage
+                  src={item.image || LISTING_DEFAULT_IMAGE}
+                  alt={item.name}
+                  fill
+                  sizes="48px"
+                  className="object-cover"
+                />
+              </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate group-hover:text-orange-600 transition-colors">
                   {item.name}
@@ -65,11 +69,12 @@ export function ListingDetailPage({ bundle }: { bundle: ListingBundle }) {
   return (
     <main className="min-h-screen bg-gray-50">
       <div className="relative w-full max-w-[100vw] h-56 sm:h-72 md:h-80 overflow-hidden bg-gray-200">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <OptimizedImage
           src={heroImage}
           alt={listing.name}
-          className="absolute inset-0 w-full h-full object-cover"
+          fill
+          sizes="100vw"
+          className="object-cover"
         />
       </div>
 

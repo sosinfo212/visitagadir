@@ -7,6 +7,7 @@ import { LISTING_DEFAULT_IMAGE } from '@/lib/listing-images'
 import type { RelatedBlogPost } from '@/lib/blog/blog-post-sidebar-data'
 import { blogPostPath, categoryPath, listingPath } from '@/lib/seo/url'
 import type { ListingLink } from '@/lib/seo/internal-linking'
+import { OptimizedImage } from '@/components/optimized-image'
 
 function formatDate(d: Date | null) {
   if (!d) return ''
@@ -40,10 +41,15 @@ export function BlogPostRightSidebar({
                 href={blogPostPath(post.slug)}
                 className="group flex gap-3 rounded-xl hover:bg-muted/40 p-2 -mx-2 transition-colors"
               >
-                <div className="w-16 h-16 shrink-0 rounded-lg overflow-hidden bg-gray-100">
+                <div className="relative w-16 h-16 shrink-0 rounded-lg overflow-hidden bg-gray-100">
                   {post.coverImage ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={post.coverImage} alt="" className="w-full h-full object-cover" />
+                    <OptimizedImage
+                      src={post.coverImage}
+                      alt=""
+                      fill
+                      className="object-cover"
+                      sizes="64px"
+                    />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-orange-100 to-teal-100" />
                   )}
@@ -80,12 +86,13 @@ export function BlogPostRightSidebar({
                 href={listingPath(listing.slug)}
                 className="group flex gap-3 rounded-xl border border-transparent hover:border-orange-100 hover:bg-orange-50/40 p-2 -mx-2 transition-all"
               >
-                <div className="w-14 h-14 shrink-0 rounded-lg overflow-hidden bg-gray-100">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                <div className="relative w-14 h-14 shrink-0 rounded-lg overflow-hidden bg-gray-100">
+                  <OptimizedImage
                     src={listing.image ?? LISTING_DEFAULT_IMAGE}
                     alt=""
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
+                    sizes="56px"
                   />
                 </div>
                 <div className="min-w-0 flex-1">

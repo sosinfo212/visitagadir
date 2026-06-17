@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button'
 import { categoryBgColors, getCategoryIcon } from '@/lib/category-icons'
 import { categoryPath } from '@/lib/seo/url'
 import { AddBusinessModal, type CategoryWithCount } from '@/components/add-business-modal'
+import { OptimizedImage } from '@/components/optimized-image'
 import type { AppSettingsPublic } from '@/lib/app-settings'
 
 const businessLoginUrl = '/login?callbackUrl=%2Fmy-listings'
@@ -153,14 +154,17 @@ function SiteHeaderInner({ initialBranding }: { initialBranding?: AppSettingsPub
               onClick={goHome}
               className="flex items-center gap-2 hover:opacity-80 transition-opacity shrink-0"
             >
-              <img
+              <OptimizedImage
                 src={siteBranding.siteLogoUrl}
                 alt={siteBranding.siteName}
+                width={siteBranding.siteLogoWidth}
+                height={siteBranding.siteLogoHeight}
                 className="rounded-lg object-contain"
                 style={{
                   width: siteBranding.siteLogoWidth,
                   height: siteBranding.siteLogoHeight,
                 }}
+                priority
               />
             </button>
 

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { LISTING_DEFAULT_IMAGE } from '@/lib/listing-images'
+import { OptimizedImage } from '@/components/optimized-image'
 
 interface ListingPhotosGalleryProps {
   name: string
@@ -74,17 +75,23 @@ export function ListingPhotosGallery({ name, images: rawImages }: ListingPhotosG
             onTouchEnd={onTouchEnd}
           >
             <AnimatePresence mode="wait" initial={false}>
-              <motion.img
+              <motion.div
                 key={`${name}-${safeIdx}`}
-                src={currentSrc}
-                alt={`${name}${hasMultiple ? ` — photo ${safeIdx + 1}` : ''}`}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.25 }}
-                className="absolute inset-0 w-full h-full max-w-full object-cover cursor-zoom-in bg-gray-100"
+                className="absolute inset-0 cursor-zoom-in"
                 onClick={() => openLightbox(safeIdx)}
-              />
+              >
+                <OptimizedImage
+                  src={currentSrc}
+                  alt={`${name}${hasMultiple ? ` — photo ${safeIdx + 1}` : ''}`}
+                  fill
+                  className="object-cover bg-gray-100"
+                  sizes="(max-width: 768px) 100vw, 800px"
+                />
+              </motion.div>
             </AnimatePresence>
 
             {hasMultiple && (
@@ -124,8 +131,9 @@ export function ListingPhotosGallery({ name, images: rawImages }: ListingPhotosG
                       : 'border-transparent opacity-60 hover:opacity-100 hover:border-gray-300'
                   }`}
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={src} alt="" className="w-full h-full object-cover" />
+                  <div className="relative w-full h-full">
+                    <OptimizedImage src={src} alt="" fill className="object-cover" sizes="96px" />
+                  </div>
                 </button>
               ))}
             </div>
@@ -178,17 +186,23 @@ export function ListingPhotosGallery({ name, images: rawImages }: ListingPhotosG
               </>
             )}
 
-            <motion.img
+            <motion.div
               key={safeIdx}
-              src={currentSrc}
-              alt={name}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="max-w-full max-h-full object-contain"
+              className="relative w-[min(90vw,1200px)] h-[min(85vh,800px)]"
               onClick={(e) => e.stopPropagation()}
-            />
+            >
+              <OptimizedImage
+                src={currentSrc}
+                alt={name}
+                fill
+                className="object-contain"
+                sizes="90vw"
+              />
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

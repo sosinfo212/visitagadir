@@ -23,6 +23,7 @@ import { categoryPath, listingPath } from '@/lib/seo/url'
 import { getRelatedCategories, getListingsInCategory } from '@/lib/seo/internal-linking'
 import { SchemaScript } from '@/components/seo/schema-script'
 import { BreadcrumbNav } from '@/components/seo/breadcrumb-nav'
+import { OptimizedImage } from '@/components/optimized-image'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -111,11 +112,12 @@ export default async function CategoryPage({ params }: PageProps) {
                     <li key={l.id} className="bg-white border rounded-xl overflow-hidden hover:shadow-md transition-shadow">
                       <Link href={listingPath(l.slug)} className="block">
                         <div className="relative h-36 bg-gray-100">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
+                          <OptimizedImage
                             src={l.images[0]}
                             alt={l.name}
-                            className="absolute inset-0 w-full h-full object-cover"
+                            fill
+                            sizes="(max-width: 640px) 100vw, 50vw"
+                            className="object-cover"
                           />
                           {l.featured && (
                             <span className="absolute top-2 left-2 text-[10px] bg-amber-400 text-amber-900 px-1.5 py-0.5 rounded font-bold">

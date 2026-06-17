@@ -39,6 +39,7 @@ import { Label } from '@/components/ui/label'
 import { MultiImageInput } from '@/components/multi-image-input'
 import { categoryBgColors, getCategoryIcon } from '@/lib/category-icons'
 import { DynamicAdSlot } from '@/components/dynamic-ad-slot'
+import { OptimizedImage } from '@/components/optimized-image'
 import { ListingPhotosGallery } from '@/components/listing/listing-photos-gallery'
 import type { HomepageInitialData } from '@/lib/homepage-data'
 
@@ -290,15 +291,23 @@ function AnimatedHeroSection({
     >
       {/* ── Background Image with Parallax ── */}
       <motion.div
-        className="absolute inset-0 bg-cover bg-center scale-110"
-        style={{ backgroundImage: "url('/agadir-hero.jpg')" }}
+        className="absolute inset-0 scale-110"
         animate={{
           x: isHovering ? px * -20 : 0,
           y: isHovering ? py * -20 : 0,
           scale: isHovering ? 1.05 : 1.1,
         }}
         transition={{ type: 'spring', stiffness: 50, damping: 30 }}
-      />
+      >
+        <OptimizedImage
+          src="/agadir-hero.jpg"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-center"
+        />
+      </motion.div>
 
       {/* ── Animated Gradient Overlay ── */}
       <motion.div
@@ -1074,10 +1083,12 @@ export default function Home({
                         >
                           {/* Image header */}
                           <div className="relative h-40 overflow-hidden">
-                            <img
+                            <OptimizedImage
                               src={getListingCardImage(listing)}
                               alt={listing.name}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              fill
+                              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                              className="object-cover group-hover:scale-105 transition-transform duration-500"
                             />
                             {listing.featured && (
                               <Badge className="absolute top-2.5 right-2.5 bg-amber-100 text-amber-700 border-amber-200 shadow-sm">
@@ -1148,10 +1159,12 @@ export default function Home({
                           <Card className="group h-full hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden border-0 shadow-sm">
                             <div className="relative h-44 overflow-hidden bg-gradient-to-br from-orange-100 to-teal-100">
                               {post.coverImage ? (
-                                <img
+                                <OptimizedImage
                                   src={post.coverImage}
                                   alt={post.title}
-                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                  fill
+                                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                                  className="object-cover group-hover:scale-105 transition-transform duration-500"
                                 />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center">
@@ -1227,10 +1240,12 @@ export default function Home({
                     </div>
                   </div>
                   <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-video">
-                    <img
+                    <OptimizedImage
                       src="/agadir-hero.jpg"
                       alt="Agadir City"
-                      className="w-full h-full object-cover"
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 50vw"
+                      className="object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
                   </div>
@@ -1335,11 +1350,13 @@ export default function Home({
                           <CardContent className="p-0">
                             <div className="flex flex-col sm:flex-row">
                               {/* Thumbnail image */}
-                              <div className="relative sm:w-32 h-32 sm:h-auto shrink-0 overflow-hidden">
-                                <img
+                              <div className="relative sm:w-32 h-32 sm:h-auto shrink-0 overflow-hidden min-h-[8rem]">
+                                <OptimizedImage
                                   src={getListingCardImage(listing)}
                                   alt={listing.name}
-                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                  fill
+                                  sizes="128px"
+                                  className="object-cover group-hover:scale-105 transition-transform duration-500"
                                 />
                               </div>
                               <div className="flex-1 p-4 sm:p-5">
@@ -1424,11 +1441,12 @@ export default function Home({
             >
               {/* Listing Header */}
               <div className="relative w-full max-w-[100vw] h-56 sm:h-72 md:h-80 overflow-hidden bg-gray-200">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <OptimizedImage
                   src={getListingCardImage(selectedListing)}
                   alt={selectedListing.name}
-                  className="absolute inset-0 w-full h-full object-cover"
+                  fill
+                  sizes="100vw"
+                  className="object-cover"
                 />
               </div>
 
@@ -1628,11 +1646,15 @@ export default function Home({
                                 onClick={() => handleListingClick(listing)}
                                 className="flex items-center gap-3 w-full text-left group"
                               >
-                                <img
-                                  src={getListingCardImage(listing)}
-                                  alt={listing.name}
-                                  className="h-12 w-12 rounded-lg object-cover shrink-0"
-                                />
+                                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg">
+                                  <OptimizedImage
+                                    src={getListingCardImage(listing)}
+                                    alt={listing.name}
+                                    fill
+                                    sizes="48px"
+                                    className="object-cover"
+                                  />
+                                </div>
                                 <div className="flex-1 min-w-0">
                                   <p className="text-sm font-medium truncate group-hover:text-orange-600 transition-colors">
                                     {listing.name}

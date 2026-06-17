@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { OptimizedImage } from '@/components/optimized-image'
 
 const fadeInUp = {
   initial: { y: 40, opacity: 0 },
@@ -78,8 +79,15 @@ export default function AboutPage() {
             transition={{ delay: 0.2, duration: 0.6 }}
             className="relative"
           >
-            <div className="rounded-2xl overflow-hidden shadow-2xl">
-              <img src="/listings/default.jpg" alt="Agadir coastline" className="w-full h-80 object-cover" />
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+              <OptimizedImage
+                src="/listings/default.jpg"
+                alt="Agadir coastline"
+                width={800}
+                height={320}
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="w-full h-80 object-cover"
+              />
             </div>
             <div className="absolute -bottom-6 -left-6 bg-white rounded-2xl shadow-xl p-4 flex items-center gap-3">
               <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-orange-500 to-teal-500 flex items-center justify-center text-white">
@@ -254,11 +262,15 @@ export default function AboutPage() {
 
       {/* CTA */}
       <section className="relative overflow-hidden py-20 sm:py-24">
-        {/* Background Image */}
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: "url('/listings/default.jpg')" }}
-        />
+        <div className="absolute inset-0">
+          <OptimizedImage
+            src="/listings/default.jpg"
+            alt=""
+            fill
+            sizes="100vw"
+            className="object-cover object-center"
+          />
+        </div>
         {/* Dark overlay for text readability */}
         <div className="absolute inset-0 bg-gradient-to-r from-orange-600/85 via-orange-700/80 to-teal-700/85" />
 

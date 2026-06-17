@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { blogCategoryPath, blogPostPath } from '@/lib/seo/url'
 import type { BlogPostCardData } from '@/lib/blog/blog-list-data'
+import { OptimizedImage } from '@/components/optimized-image'
 
 function formatDate(d: Date | null) {
   if (!d) return ''
@@ -16,14 +17,14 @@ export function BlogPostCard({ post }: { post: BlogPostCardData }) {
       <CardContent className="p-0">
         <div className="block sm:flex">
           <Link href={blogPostPath(post.slug)} className="sm:w-64 shrink-0 block">
-            <div className="aspect-[16/10] sm:aspect-auto sm:min-h-[180px] bg-gradient-to-br from-orange-100 to-amber-50">
+            <div className="relative aspect-[16/10] sm:aspect-auto sm:min-h-[180px] bg-gradient-to-br from-orange-100 to-amber-50">
               {post.coverImage ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <OptimizedImage
                   src={post.coverImage}
                   alt={post.title}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
+                  fill
+                  sizes="(max-width: 640px) 100vw, 256px"
+                  className="object-cover"
                 />
               ) : (
                 <div className="w-full h-full min-h-[160px] flex items-center justify-center text-orange-300">

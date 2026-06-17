@@ -17,6 +17,7 @@ import { getRelatedBlogPosts, getBlogSidebarListings } from '@/lib/blog/blog-pos
 import { BlogPostLeftSidebar } from '@/components/blog/blog-post-left-sidebar'
 import { BlogPostRightSidebar } from '@/components/blog/blog-post-right-sidebar'
 import { BlogPostContent } from '@/components/blog/blog-post-content'
+import { OptimizedImage } from '@/components/optimized-image'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -112,13 +113,14 @@ export default async function BlogPostPage({ params }: PageProps) {
 
             <article className="min-w-0">
               {post.coverImage ? (
-                <div className="rounded-2xl overflow-hidden mb-6 sm:mb-8 aspect-[2/1] bg-gray-200 shadow-sm">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                <div className="relative rounded-2xl overflow-hidden mb-6 sm:mb-8 aspect-[2/1] bg-gray-200 shadow-sm">
+                  <OptimizedImage
                     src={post.coverImage}
                     alt={post.title}
-                    className="w-full h-full object-cover"
-                    fetchPriority="high"
+                    fill
+                    className="object-cover"
+                    priority
+                    sizes="(max-width: 1280px) 100vw, 800px"
                   />
                 </div>
               ) : null}

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Separator } from '@/components/ui/separator'
 import { categoryPath } from '@/lib/seo/url'
 import type { AppSettingsPublic } from '@/lib/app-settings'
+import { OptimizedImage } from '@/components/optimized-image'
 
 interface CategoryLink {
   id: string
@@ -46,9 +47,11 @@ export function SiteFooter({ branding }: { branding?: AppSettingsPublic | null }
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div className="col-span-2 md:col-span-1">
             <div className="mb-4">
-              <img
+              <OptimizedImage
                 src={footerBranding.footerLogoUrl}
                 alt={footerBranding.siteName}
+                width={footerBranding.footerLogoWidth}
+                height={footerBranding.footerLogoHeight}
                 className="rounded-lg object-contain"
                 style={{
                   width: footerBranding.footerLogoWidth,
