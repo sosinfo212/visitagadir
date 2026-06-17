@@ -66,27 +66,39 @@ export function SiteFooter({ branding }: { branding?: AppSettingsPublic | null }
 
           <div>
             <h4 className="font-semibold mb-3">Categories</h4>
-            <ul className="space-y-2 text-sm text-gray-400">
-              {firstCategories.map((cat) => (
-                <li key={cat.id}>
-                  <Link href={categoryPath(cat.slug)} className="hover:text-white transition-colors">
-                    {cat.name}
-                  </Link>
-                </li>
-              ))}
+            <ul className="space-y-2 text-sm text-gray-400 min-h-[7.5rem]">
+              {firstCategories.length > 0 ? (
+                firstCategories.map((cat) => (
+                  <li key={cat.id}>
+                    <Link href={categoryPath(cat.slug)} className="hover:text-white transition-colors">
+                      {cat.name}
+                    </Link>
+                  </li>
+                ))
+              ) : (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <li key={`cat-skeleton-${i}`} className="h-5 rounded bg-gray-800/60 animate-pulse" aria-hidden="true" />
+                ))
+              )}
             </ul>
           </div>
 
           <div>
             <h4 className="font-semibold mb-3">More Categories</h4>
-            <ul className="space-y-2 text-sm text-gray-400">
-              {moreCategories.map((cat) => (
-                <li key={cat.id}>
-                  <Link href={categoryPath(cat.slug)} className="hover:text-white transition-colors">
-                    {cat.name}
-                  </Link>
-                </li>
-              ))}
+            <ul className="space-y-2 text-sm text-gray-400 min-h-[7.5rem]">
+              {moreCategories.length > 0 ? (
+                moreCategories.map((cat) => (
+                  <li key={cat.id}>
+                    <Link href={categoryPath(cat.slug)} className="hover:text-white transition-colors">
+                      {cat.name}
+                    </Link>
+                  </li>
+                ))
+              ) : (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <li key={`more-cat-skeleton-${i}`} className="h-5 rounded bg-gray-800/60 animate-pulse" aria-hidden="true" />
+                ))
+              )}
             </ul>
           </div>
 

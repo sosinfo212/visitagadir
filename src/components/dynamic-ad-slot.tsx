@@ -17,6 +17,35 @@ interface AdConfig {
   }>
 }
 
+/** Reserve height while config loads or when an ad may still render — prevents layout shift. */
+const LOCATION_MIN_HEIGHT: Record<string, string> = {
+  header_banner: 'min-h-[90px]',
+  featured_feed: 'min-h-[90px]',
+  bottom_banner: 'min-h-[90px]',
+  category_banner: 'min-h-[90px]',
+  listings_feed: 'min-h-[90px]',
+  article_inline: 'min-h-[90px]',
+  blog_list_feed: 'min-h-[90px]',
+  blog_content_inline: 'min-h-[250px]',
+  blog_list_sidebar: 'min-h-[250px]',
+  sidebar_rectangle: 'min-h-[250px]',
+}
+
+function reservedClassName(location: string, className: string) {
+  const reserved = LOCATION_MIN_HEIGHT[location] ?? 'min-h-[90px]'
+  if (className.includes('min-h-')) return className
+  return `${reserved} ${className}`.trim()
+}
+
+function AdReservedSpace({ className = '' }: { className?: string }) {
+  return (
+    <div
+      className={`ad-container w-full max-w-full min-w-0 ${className}`}
+      aria-hidden="true"
+    />
+  )
+}
+
 let adsenseScriptLoaded = false
 let adsenseScriptLoading = false
 
@@ -93,7 +122,10 @@ function AdSenseSlot({
     <div className={`ad-container w-full max-w-full min-w-0 ${className}`}>
       <ins
         className="adsbygoogle"
-        style={{ display: 'block', minHeight: format === 'fluid' ? 'auto' : undefined }}
+        style={{
+          display: 'block',
+          minHeight: format === 'fluid' ? 90 : format === 'rectangle' ? 250 : 90,
+        }}
         data-ad-client={publisherId}
         data-ad-slot={slot}
         data-ad-format={format}
@@ -142,20 +174,28 @@ export function DynamicAdSlot({
   }, [lazy, visible])
 
   if (!visible) {
-    return <div ref={containerRef} className={className} aria-hidden="true" />
+    return <div ref={containerRef} className={reservedClassName(location, className)} aria-hidden="true" />
   }
 
-  if (!config) return null
-  if (!config.adsEnabled) return null
+  const slotClassName = reservedClassName(location, className)
+
+  if (!config) {
+    return <AdReservedSpace className={slotClassName} />
+  }
+  if (!config.adsEnabled) {
+    return <AdReservedSpace className={slotClassName} />
+  }
 
   const placement = config.placements.find((p) => p.location === location)
-  if (!placement) return null
+  if (!placement) {
+    return <AdReservedSpace className={slotClassName} />
+  }
 
   if (placement.adType === 'custom') {
-    if (!placement.customHtml) return null
+    if (!placement.customHtml) return <AdReservedSpace className={slotClassName} />
     return (
       <div
-        className={`ad-container w-full max-w-full min-w-0 ${className}`}
+        className={`ad-container w-full max-w-full min-w-0 ${slotClassName}`}
         dangerouslySetInnerHTML={{ __html: placement.customHtml }}
       />
     )
@@ -167,8 +207,8 @@ export function DynamicAdSlot({
     config.publisherId !== 'ca-pub-XXXXXXXXXXXXXXXX'
 
   if (!hasRealAdSense) {
-    if (!config.showPlaceholders) return null
-    return <AdPlaceholder label={placement.name} className={className} />
+    if (!config.showPlaceholders) return <AdReservedSpace className={slotClassName} />
+    return <AdPlaceholder label={placement.name} className={slotClassName} />
   }
 
   if (typeof window !== 'undefined') loadAdSenseScript(config.publisherId)
@@ -180,7 +220,7 @@ export function DynamicAdSlot({
       format={placement.format}
       showPlaceholder={false}
       label={placement.name}
-      className={className}
+      className={slotClassName}
     />
   )
 }

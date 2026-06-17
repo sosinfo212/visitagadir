@@ -1019,7 +1019,7 @@ export default function Home({
 
               {/* Ad Banner - Top */}
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 w-full min-w-0">
-                <DynamicAdSlot location="header_banner" className="mt-2 w-full min-w-0" />
+                <DynamicAdSlot location="header_banner" className="mt-2 w-full min-w-0 min-h-[90px]" />
               </div>
 
               {/* Categories Grid */}
@@ -1127,7 +1127,7 @@ export default function Home({
 
                   {/* Ad in middle of featured section */}
                   <div className="mt-8 w-full min-w-0">
-                    <DynamicAdSlot location="featured_feed" className="w-full min-w-0" />
+                    <DynamicAdSlot location="featured_feed" className="w-full min-w-0 min-h-[90px]" />
                   </div>
                 </div>
               </section>
@@ -1254,7 +1254,7 @@ export default function Home({
 
               {/* Bottom Ad */}
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 w-full min-w-0">
-                <DynamicAdSlot location="bottom_banner" className="w-full min-w-0" />
+                <DynamicAdSlot location="bottom_banner" className="w-full min-w-0 min-h-[90px]" />
               </div>
             </motion.div>
           )}
@@ -1317,7 +1317,7 @@ export default function Home({
 
               {/* Ad Banner */}
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-                <DynamicAdSlot location="category_banner" />
+                <DynamicAdSlot location="category_banner" className="min-h-[90px]" />
               </div>
 
               {/* Listings */}
@@ -1413,7 +1413,7 @@ export default function Home({
                         {/* In-feed ad every 4 listings */}
                         {index > 0 && (index + 1) % 4 === 0 && (
                           <div className="my-4">
-                            <DynamicAdSlot location="listings_feed" />
+                            <DynamicAdSlot location="listings_feed" className="min-h-[90px]" />
                           </div>
                         )}
                       </motion.div>
@@ -1570,7 +1570,7 @@ export default function Home({
                     </Card>
 
                     {/* Ad in content */}
-                    <DynamicAdSlot location="article_inline" className="my-4" />
+                    <DynamicAdSlot location="article_inline" className="my-4 min-h-[90px]" />
                   </div>
 
                   {/* Sidebar */}

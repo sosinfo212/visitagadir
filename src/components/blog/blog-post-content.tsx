@@ -18,7 +18,7 @@ export function BlogPostContent({ html }: BlogPostContentProps) {
           <DynamicAdSlot
             key={`blog-ad-${index}`}
             location="blog_content_inline"
-            className="my-8 not-prose"
+            className="my-8 not-prose min-h-[250px]"
           />
         ) : (
           <div

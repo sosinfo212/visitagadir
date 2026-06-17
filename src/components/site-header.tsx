@@ -264,14 +264,20 @@ function SiteHeaderInner({ initialBranding }: { initialBranding?: AppSettingsPub
                     My Listings
                   </Button>
                 </Link>
-              ) : status !== 'loading' ? (
-                <Link href={businessLoginUrl} className="hidden sm:block">
-                  <Button variant="outline" size="sm" className="h-9 rounded-lg text-sm gap-1.5">
-                    <LogIn className="h-4 w-4" />
-                    Business Login
-                  </Button>
-                </Link>
-              ) : null}
+              ) : (
+                <div className="hidden sm:block h-9 min-w-[8.75rem]">
+                  {status === 'loading' ? (
+                    <div className="h-9 w-full rounded-lg bg-muted/60 animate-pulse" aria-hidden="true" />
+                  ) : (
+                    <Link href={businessLoginUrl}>
+                      <Button variant="outline" size="sm" className="h-9 rounded-lg text-sm gap-1.5 w-full">
+                        <LogIn className="h-4 w-4" />
+                        Business Login
+                      </Button>
+                    </Link>
+                  )}
+                </div>
+              )}
               <motion.div
                 className="hidden sm:block"
                 animate={{
@@ -292,12 +298,18 @@ function SiteHeaderInner({ initialBranding }: { initialBranding?: AppSettingsPub
                 </Button>
               </motion.div>
 
-              {!session?.user && status !== 'loading' && (
-                <Link href={businessLoginUrl} className="sm:hidden">
-                  <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg" aria-label="Business login">
-                    <LogIn className="h-4 w-4" />
-                  </Button>
-                </Link>
+              {!session?.user && (
+                <div className="sm:hidden h-9 w-9">
+                  {status === 'loading' ? (
+                    <div className="h-9 w-9 rounded-lg bg-muted/60 animate-pulse" aria-hidden="true" />
+                  ) : (
+                    <Link href={businessLoginUrl}>
+                      <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg" aria-label="Business login">
+                        <LogIn className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  )}
+                </div>
               )}
               <Button
                 onClick={handleListBusiness}
@@ -363,16 +375,22 @@ function SiteHeaderInner({ initialBranding }: { initialBranding?: AppSettingsPub
                     <Building2 className="h-4 w-4 text-teal-600" />
                     <span>My Listings</span>
                   </Link>
-                ) : status !== 'loading' ? (
-                  <Link
-                    href={businessLoginUrl}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold text-left transition-all bg-white border mb-3 w-full hover:bg-gray-50"
-                  >
-                    <LogIn className="h-4 w-4 text-orange-600" />
-                    <span>Business Login</span>
-                  </Link>
-                ) : null}
+                ) : (
+                  <div className="mb-3 h-11">
+                    {status === 'loading' ? (
+                      <div className="h-11 w-full rounded-xl bg-muted/60 animate-pulse" aria-hidden="true" />
+                    ) : (
+                      <Link
+                        href={businessLoginUrl}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold text-left transition-all bg-white border w-full hover:bg-gray-50"
+                      >
+                        <LogIn className="h-4 w-4 text-orange-600" />
+                        <span>Business Login</span>
+                      </Link>
+                    )}
+                  </div>
+                )}
 
                 <div className="grid grid-cols-2 gap-1.5">
                   {categories.map((cat, i) => (
