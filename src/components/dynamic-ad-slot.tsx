@@ -48,20 +48,24 @@ function AdReservedSpace({ className = '' }: { className?: string }) {
 
 let adsenseScriptLoaded = false
 let adsenseScriptLoading = false
+let pageLevelAdsConfigured = false
 
 function loadAdSenseScript(publisherId: string) {
   if (adsenseScriptLoaded || adsenseScriptLoading || !publisherId || publisherId === 'ca-pub-XXXXXXXXXXXXXXXX') return
   adsenseScriptLoading = true
 
-  // Opt out of AdSense Auto ads (e.g. "Discover more" below footer); manual slots only.
-  try {
-    // @ts-expect-error adsbygoogle is injected by Google
-    ;(window.adsbygoogle = window.adsbygoogle || []).push({
-      google_ad_client: publisherId,
-      enable_page_level_ads: false,
-    })
-  } catch {
-    // ignore
+  // Opt out of AdSense Auto ads once; manual slots only.
+  if (!pageLevelAdsConfigured) {
+    pageLevelAdsConfigured = true
+    try {
+      // @ts-expect-error adsbygoogle is injected by Google
+      ;(window.adsbygoogle = window.adsbygoogle || []).push({
+        google_ad_client: publisherId,
+        enable_page_level_ads: false,
+      })
+    } catch {
+      // ignore
+    }
   }
 
   const script = document.createElement('script')
