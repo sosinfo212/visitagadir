@@ -50,7 +50,7 @@ export default function AboutPage() {
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.6 }}
-            className="text-lg sm:text-xl text-white/80 max-w-2xl mx-auto"
+            className="text-lg sm:text-xl text-white/90 max-w-2xl mx-auto"
           >
             We are the most comprehensive online guide to Agadir, connecting locals and visitors with the best businesses, services, and experiences the city has to offer.
           </motion.p>

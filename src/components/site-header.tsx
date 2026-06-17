@@ -152,6 +152,7 @@ function SiteHeaderInner({ initialBranding }: { initialBranding?: AppSettingsPub
           <div className="flex items-center justify-between h-16 gap-2">
             <button
               onClick={goHome}
+              aria-label={`Go to ${siteBranding.siteName} homepage`}
               className="flex items-center gap-2 hover:opacity-80 transition-opacity shrink-0"
             >
               <OptimizedImage
@@ -314,6 +315,7 @@ function SiteHeaderInner({ initialBranding }: { initialBranding?: AppSettingsPub
               <Button
                 onClick={handleListBusiness}
                 size="icon"
+                aria-label="List your business"
                 className="sm:hidden h-9 w-9 bg-gradient-to-r from-orange-500 to-teal-500 hover:from-orange-600 hover:to-teal-600 text-white rounded-lg shadow-sm"
               >
                 <Plus className="h-4 w-4" />
@@ -322,6 +324,7 @@ function SiteHeaderInner({ initialBranding }: { initialBranding?: AppSettingsPub
               <Button
                 variant="ghost"
                 size="icon"
+                aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
                 className="md:hidden h-9 w-9"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               >

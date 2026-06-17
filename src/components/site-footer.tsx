@@ -65,7 +65,7 @@ export function SiteFooter({ branding }: { branding?: AppSettingsPublic | null }
           </div>
 
           <div>
-            <h4 className="font-semibold mb-3">Categories</h4>
+            <h2 className="font-semibold mb-3">Categories</h2>
             <ul className="space-y-2 text-sm text-gray-400 min-h-[7.5rem]">
               {firstCategories.length > 0 ? (
                 firstCategories.map((cat) => (
@@ -84,7 +84,7 @@ export function SiteFooter({ branding }: { branding?: AppSettingsPublic | null }
           </div>
 
           <div>
-            <h4 className="font-semibold mb-3">More Categories</h4>
+            <h2 className="font-semibold mb-3">More Categories</h2>
             <ul className="space-y-2 text-sm text-gray-400 min-h-[7.5rem]">
               {moreCategories.length > 0 ? (
                 moreCategories.map((cat) => (
@@ -103,7 +103,7 @@ export function SiteFooter({ branding }: { branding?: AppSettingsPublic | null }
           </div>
 
           <div>
-            <h4 className="font-semibold mb-3">About</h4>
+            <h2 className="font-semibold mb-3">About</h2>
             <ul className="space-y-2 text-sm text-gray-400">
               <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
               <li><Link href="/blog" className="hover:text-white transition-colors">Blog</Link></li>

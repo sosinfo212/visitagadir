@@ -520,7 +520,7 @@ function AnimatedHeroSection({
 
           {/* Title with letter-by-letter animation */}
           <div style={{ transform: 'translateZ(60px)' }}>
-            <motion.div className="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-white leading-tight tracking-tight">
+            <motion.h2 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-white leading-tight tracking-tight">
               {/* Line 1: letter animation */}
               <span className="inline-flex flex-wrap justify-center">
                 {titleLine1.split('').map((char, i) => (
@@ -575,7 +575,7 @@ function AnimatedHeroSection({
                   </motion.span>
                 ))}
               </motion.span>
-            </motion.div>
+            </motion.h2>
           </div>
 
           {/* Subtitle */}
@@ -652,7 +652,7 @@ function AnimatedHeroSection({
               <motion.button
                 key={cat.id}
                 onClick={() => handleCategoryClick(cat.slug)}
-                className="px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/15 text-white/80 text-sm hover:bg-white/20 hover:text-white transition-all duration-300 flex items-center gap-1.5"
+                className="px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/15 text-white/90 text-sm hover:bg-white/20 hover:text-white transition-all duration-300 flex items-center gap-1.5"
                 whileHover={{ scale: 1.08, y: -2 }}
                 whileTap={{ scale: 0.95 }}
                 animate={{
@@ -700,7 +700,7 @@ function AnimatedHeroSection({
                   {stat.isDecimal ? stat.value : stat.value}
                   {stat.suffix || ''}
                 </motion.div>
-                <div className="text-xs sm:text-sm text-white/50 mt-0.5">{stat.label}</div>
+                <div className="text-xs sm:text-sm text-white/75 mt-0.5">{stat.label}</div>
               </motion.div>
             ))}
             {/* Separators */}
@@ -1046,7 +1046,7 @@ export default function Home({
               {/* Categories Grid */}
               <section id="categories-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div className="text-center mb-10">
-                  <h3 className="text-2xl sm:text-3xl font-bold">Browse by Category</h3>
+                  <h2 className="text-2xl sm:text-3xl font-bold">Browse by Category</h2>
                   <p className="text-muted-foreground mt-2">Find exactly what you need in Agadir</p>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -1064,7 +1064,7 @@ export default function Home({
                       <div className={`inline-flex p-2.5 rounded-xl bg-gradient-to-br ${categoryColors[cat.slug] || 'from-gray-400 to-gray-500'} text-white mb-3 shadow-sm`}>
                         {getCategoryIcon(cat.icon)}
                       </div>
-                      <h4 className="font-semibold text-sm sm:text-base leading-tight mb-1">{cat.name}</h4>
+                      <h3 className="font-semibold text-sm sm:text-base leading-tight mb-1">{cat.name}</h3>
                       {cat.description && (
                         <p className="text-xs text-muted-foreground line-clamp-2 mb-2 leading-relaxed">
                           {cat.description}
@@ -1082,7 +1082,7 @@ export default function Home({
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                   <div className="flex items-center justify-between mb-8">
                     <div>
-                      <h3 className="text-2xl sm:text-3xl font-bold">Featured in Agadir</h3>
+                      <h2 className="text-2xl sm:text-3xl font-bold">Featured in Agadir</h2>
                       <p className="text-muted-foreground mt-1">Top-rated and recommended places</p>
                     </div>
                     <Badge variant="secondary" className="hidden sm:flex items-center gap-1">
@@ -1121,9 +1121,9 @@ export default function Home({
                             </Badge>
                           </div>
                           <CardContent className="p-5">
-                            <h4 className="font-semibold text-base group-hover:text-orange-600 transition-colors leading-tight mb-2">
+                            <h3 className="font-semibold text-base group-hover:text-orange-600 transition-colors leading-tight mb-2">
                               {listing.name}
-                            </h4>
+                            </h3>
                             <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{stripHtml(listing.description)}</p>
                             <div className="flex items-center gap-2 mb-2">
                               <StarRating rating={listing.rating} />
@@ -1158,7 +1158,7 @@ export default function Home({
                 <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                   <div className="flex items-center justify-between mb-8">
                     <div>
-                      <h3 className="text-2xl sm:text-3xl font-bold">Our Latest Posts</h3>
+                      <h2 className="text-2xl sm:text-3xl font-bold">Our Latest Posts</h2>
                       <p className="text-muted-foreground mt-1">Travel tips, guides, and stories from Agadir</p>
                     </div>
                     <Link href="/blog">
@@ -1197,9 +1197,9 @@ export default function Home({
                               </Badge>
                             </div>
                             <CardContent className="p-4">
-                              <h4 className="font-semibold text-base group-hover:text-orange-600 transition-colors leading-snug line-clamp-2 mb-2">
+                              <h3 className="font-semibold text-base group-hover:text-orange-600 transition-colors leading-snug line-clamp-2 mb-2">
                                 {post.title}
-                              </h4>
+                              </h3>
                               {post.excerpt && (
                                 <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{post.excerpt}</p>
                               )}
@@ -1232,7 +1232,7 @@ export default function Home({
               <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div className="grid md:grid-cols-2 gap-8 items-center">
                   <div>
-                    <h3 className="text-2xl sm:text-3xl font-bold mb-4">Welcome to Agadir</h3>
+                    <h2 className="text-2xl sm:text-3xl font-bold mb-4">Welcome to Agadir</h2>
                     <p className="text-muted-foreground leading-relaxed mb-4">
                       Agadir is a vibrant coastal city in southern Morocco, renowned for its stunning beaches, year-round sunshine, and warm hospitality. Rebuilt after a devastating earthquake in 1960, the modern city has become one of Morocco&apos;s premier tourist destinations.
                     </p>
@@ -1309,17 +1309,17 @@ export default function Home({
                       <h2 className="text-3xl sm:text-4xl font-bold">
                         {activeCategoryData?.name || (searchQuery ? `Search: "${searchQuery}"` : 'All Listings')}
                       </h2>
-                      <p className="text-white/80 mt-1">
+                      <p className="text-white/90 mt-1">
                         {activeCategoryData?.description || (searchQuery ? 'Matching businesses across Agadir' : 'Browse all listings')}
                       </p>
                     </div>
                   </div>
                   <div className="mt-6 flex items-center gap-3">
                     <div className="relative flex-1 max-w-md">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/75" />
                       <Input
                         placeholder={activeCategoryData ? `Search in ${activeCategoryData.name}...` : 'Refine your search...'}
-                        className="pl-9 bg-white/20 border-white/30 text-white placeholder:text-white/60 h-10"
+                        className="pl-9 bg-white/20 border-white/30 text-white placeholder:text-white/75 h-10"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -1384,9 +1384,9 @@ export default function Home({
                                 <div className="flex items-start justify-between gap-3">
                                   <div className="flex-1">
                                     <div className="flex items-center gap-2 mb-1">
-                                      <h4 className="font-semibold text-lg group-hover:text-orange-600 transition-colors">
+                                      <h3 className="font-semibold text-lg group-hover:text-orange-600 transition-colors">
                                         {listing.name}
-                                      </h4>
+                                      </h3>
                                       {listing.featured && (
                                         <Badge className="bg-amber-100 text-amber-700 border-amber-200 shrink-0">
                                           <Award className="h-3 w-3 mr-1" />Featured
@@ -1658,7 +1658,7 @@ export default function Home({
                     {relatedListings.length > 0 && (
                       <Card className="shadow-sm">
                         <CardContent className="p-5">
-                          <h4 className="font-semibold mb-3">You may also like</h4>
+                          <h3 className="font-semibold mb-3">You may also like</h3>
                           <div className="space-y-3">
                             {relatedListings.map((listing) => (
                               <button
@@ -1696,7 +1696,7 @@ export default function Home({
                     {/* Related Categories */}
                     <Card className="shadow-sm">
                       <CardContent className="p-5">
-                        <h4 className="font-semibold mb-3">Related Categories</h4>
+                        <h3 className="font-semibold mb-3">Related Categories</h3>
                         <div className="space-y-2">
                           {categories
                             .filter(c => c.slug !== selectedListing.category.slug)

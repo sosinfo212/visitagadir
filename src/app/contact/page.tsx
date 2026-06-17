@@ -76,7 +76,7 @@ export default function ContactPage() {
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.15, duration: 0.6 }}
-            className="text-lg sm:text-xl text-white/80 max-w-2xl mx-auto"
+            className="text-lg sm:text-xl text-white/90 max-w-2xl mx-auto"
           >
             Have a question, suggestion, or want to list your business? We would love to hear from you. Our team typically responds within 24 hours.
           </motion.p>
@@ -253,7 +253,7 @@ export default function ContactPage() {
               <div className="bg-gradient-to-br from-orange-500 to-teal-500 p-6 text-white">
                 <Building2 className="h-8 w-8 mb-3 opacity-90" />
                 <h3 className="font-bold text-lg mb-2">Business Inquiries</h3>
-                <p className="text-white/80 text-sm leading-relaxed">
+                <p className="text-white/90 text-sm leading-relaxed">
                   Interested in advertising or partnering with Agadir Directory? We offer customized solutions for businesses of all sizes.
                 </p>
                 <Link href="/advertise">
