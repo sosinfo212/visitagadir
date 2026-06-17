@@ -222,6 +222,8 @@ function AnimatedHeroSection({
   handleCategoryClick: (slug: string) => void
 }) {
   const heroRef = useRef<HTMLDivElement>(null)
+  const heroBoundsRef = useRef({ left: 0, top: 0, width: 1, height: 1 })
+  const mouseRafRef = useRef(0)
   const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 })
   const [isHovering, setIsHovering] = useState(false)
   const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; size: number; color: string; delay: number }>>([])
@@ -242,14 +244,34 @@ function AnimatedHeroSection({
     setParticles(p)
   }, [])
 
-  // Mouse tracking with smooth interpolation
+  useEffect(() => {
+    const updateBounds = () => {
+      if (!heroRef.current) return
+      const rect = heroRef.current.getBoundingClientRect()
+      heroBoundsRef.current = {
+        left: rect.left,
+        top: rect.top,
+        width: rect.width || 1,
+        height: rect.height || 1,
+      }
+    }
+
+    updateBounds()
+    window.addEventListener('resize', updateBounds)
+    return () => window.removeEventListener('resize', updateBounds)
+  }, [])
+
+  // Mouse tracking — batch layout reads to one rAF per frame
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!heroRef.current) return
-    const rect = heroRef.current.getBoundingClientRect()
-    const x = (e.clientX - rect.left) / rect.width
-    const y = (e.clientY - rect.top) / rect.height
-    setMousePos({ x, y })
-    setIsHovering(true)
+    if (mouseRafRef.current) return
+    mouseRafRef.current = requestAnimationFrame(() => {
+      mouseRafRef.current = 0
+      const { left, top, width, height } = heroBoundsRef.current
+      const x = (e.clientX - left) / width
+      const y = (e.clientY - top) / height
+      setMousePos({ x, y })
+      setIsHovering(true)
+    })
   }, [])
 
   const handleMouseLeave = useCallback(() => {
@@ -259,10 +281,9 @@ function AnimatedHeroSection({
 
   // Click ripple effect
   const handleClick = useCallback((e: React.MouseEvent) => {
-    if (!heroRef.current) return
-    const rect = heroRef.current.getBoundingClientRect()
+    const { left, top } = heroBoundsRef.current
     const id = Date.now()
-    setRipples(prev => [...prev, { id, x: e.clientX - rect.left, y: e.clientY - rect.top }])
+    setRipples(prev => [...prev, { id, x: e.clientX - left, y: e.clientY - top }])
     setTimeout(() => {
       setRipples(prev => prev.filter(r => r.id !== id))
     }, 1500)

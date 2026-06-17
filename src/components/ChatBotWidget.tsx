@@ -1,10 +1,12 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { MessageCircle, X } from 'lucide-react'
-import ChatBot from '@/components/ChatBot'
 import { hasUnreadMessages, markChatRead } from '@/lib/chat-session'
+
+const ChatBot = dynamic(() => import('@/components/ChatBot'), { ssr: false })
 
 export default function ChatBotWidget() {
   const [open, setOpen] = useState(false)
@@ -38,11 +40,13 @@ export default function ChatBotWidget() {
         aria-label="Chat assistant"
         aria-hidden={!open}
       >
-        <ChatBot
-          isOpen={open}
-          onClose={() => setOpen(false)}
-          onUnread={() => setHasUnread(true)}
-        />
+        {open ? (
+          <ChatBot
+            isOpen={open}
+            onClose={() => setOpen(false)}
+            onUnread={() => setHasUnread(true)}
+          />
+        ) : null}
       </div>
 
       <button
