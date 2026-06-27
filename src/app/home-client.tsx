@@ -744,6 +744,7 @@ function AnimatedHeroSection({
       <div className="absolute bottom-0 left-0 right-0 z-20">
         <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
           <motion.path
+            initial={false}
             d="M0 60L48 52C96 44 192 28 288 32C384 36 480 60 576 68C672 76 768 68 864 56C960 44 1056 28 1152 28C1248 28 1344 44 1392 52L1440 60V120H1392C1344 120 1248 120 1152 120C1056 120 960 120 864 120C768 120 672 120 576 120C480 120 384 120 288 120C192 120 96 120 48 120H0V60Z"
             fill="white"
             animate={{

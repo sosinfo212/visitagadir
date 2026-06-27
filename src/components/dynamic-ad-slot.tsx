@@ -1,5 +1,6 @@
 'use client'
 
+import { loadAdSenseScript } from '@/lib/adsense-loader'
 import { useEffect, useRef, useState } from 'react'
 
 interface AdConfig {
@@ -46,42 +47,6 @@ function AdReservedSpace({ className = '' }: { className?: string }) {
   )
 }
 
-let adsenseScriptLoaded = false
-let adsenseScriptLoading = false
-let pageLevelAdsConfigured = false
-
-function loadAdSenseScript(publisherId: string) {
-  if (adsenseScriptLoaded || adsenseScriptLoading || !publisherId || publisherId === 'ca-pub-XXXXXXXXXXXXXXXX') return
-  adsenseScriptLoading = true
-
-  // Opt out of AdSense Auto ads once; manual slots only.
-  if (!pageLevelAdsConfigured) {
-    pageLevelAdsConfigured = true
-    try {
-      // @ts-expect-error adsbygoogle is injected by Google
-      ;(window.adsbygoogle = window.adsbygoogle || []).push({
-        google_ad_client: publisherId,
-        enable_page_level_ads: false,
-      })
-    } catch {
-      // ignore
-    }
-  }
-
-  const script = document.createElement('script')
-  script.async = true
-  script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${publisherId}`
-  script.crossOrigin = 'anonymous'
-  script.onload = () => {
-    adsenseScriptLoaded = true
-    adsenseScriptLoading = false
-  }
-  script.onerror = () => {
-    adsenseScriptLoading = false
-  }
-  document.head.appendChild(script)
-}
-
 function AdPlaceholder({ label, className = '' }: { label: string; className?: string }) {
   return (
     <div
@@ -107,14 +72,30 @@ function AdSenseSlot({
   label?: string
   className?: string
 }) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const pushedRef = useRef(false)
+
   useEffect(() => {
-    if (!slot || !publisherId) return
-    try {
-      // @ts-expect-error adsbygoogle is injected by Google
-      ;(window.adsbygoogle = window.adsbygoogle || []).push({})
-    } catch {
-      // AdSense not loaded yet
+    if (!slot || !publisherId || pushedRef.current) return
+    const node = containerRef.current
+    if (!node) return
+
+    const fillSlot = () => {
+      if (pushedRef.current || node.getBoundingClientRect().width <= 0) return
+      pushedRef.current = true
+      try {
+        // @ts-expect-error adsbygoogle is injected by Google
+        ;(window.adsbygoogle = window.adsbygoogle || []).push({})
+      } catch {
+        pushedRef.current = false
+      }
     }
+
+    const observer = new ResizeObserver(() => fillSlot())
+    observer.observe(node)
+    requestAnimationFrame(fillSlot)
+
+    return () => observer.disconnect()
   }, [slot, publisherId])
 
   if (!slot || !publisherId) {
@@ -123,7 +104,7 @@ function AdSenseSlot({
   }
 
   return (
-    <div className={`ad-container w-full max-w-full min-w-0 ${className}`}>
+    <div ref={containerRef} className={`ad-container w-full max-w-full min-w-0 ${className}`}>
       <ins
         className="adsbygoogle"
         style={{

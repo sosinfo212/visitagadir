@@ -254,18 +254,6 @@
   margin: 1rem 0;
 }
 
-/* Hide AdSense Auto ads; only show units we place with a slot ID */
-ins.adsbygoogle:not([data-ad-slot]) {
-  display: none !important;
-}
-
-/* Hide Auto ad wrappers injected after the footer (e.g. "Discover more") */
-body > ins.adsbygoogle:not([data-ad-slot]),
-body > div:has(ins.adsbygoogle:not([data-ad-slot])),
-footer ~ div:has(ins.adsbygoogle:not([data-ad-slot])) {
-  display: none !important;
-}
-
 /* Keep manual ad units responsive without clipping expanded content (e.g. multiplex) */
 .ad-container {
   width: 100%;
