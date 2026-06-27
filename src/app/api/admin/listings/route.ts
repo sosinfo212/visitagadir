@@ -48,6 +48,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url)
     const categorySlug = searchParams.get('category')
+    const publishedParam = searchParams.get('published')
     const search = searchParams.get('search')?.trim()
     const pageParam = Number(searchParams.get('page') || 1)
     const limitParam = Number(searchParams.get('limit') || 25)
@@ -62,6 +63,12 @@ export async function GET(request: NextRequest) {
     if (categorySlug && categorySlug !== 'all') {
       const category = await db.category.findUnique({ where: { slug: categorySlug } })
       if (category) where.categoryId = category.id
+    }
+
+    if (publishedParam === 'true') {
+      where.published = true
+    } else if (publishedParam === 'false') {
+      where.published = false
     }
 
     if (search) {

@@ -38,7 +38,14 @@ type NavItem = {
 const navItems: NavItem[] = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
-  { href: '/admin/listings', label: 'Listings', icon: Building2 },
+  {
+    label: 'Listings',
+    icon: Building2,
+    children: [
+      { href: '/admin/listings', label: 'All Listings' },
+      { href: '/admin/listings/drafts', label: 'Listing Drafts' },
+    ],
+  },
   { href: '/admin/submissions', label: 'Submissions', icon: FileText },
   { href: '/admin/reviews', label: 'Reviews', icon: Star },
   { href: '/admin/users', label: 'Users', icon: Users },
@@ -61,13 +68,28 @@ function isBlogPath(pathname: string) {
   return pathname === '/admin/blog' || pathname.startsWith('/admin/blog/')
 }
 
+function isListingsPath(pathname: string) {
+  return pathname === '/admin/listings' || pathname.startsWith('/admin/listings/')
+}
+
 function isNavItemActive(pathname: string, item: NavItem) {
+  if (item.children) {
+    if (item.label === 'Blog') return isBlogPath(pathname)
+    if (item.label === 'Listings') return isListingsPath(pathname)
+    return false
+  }
   return pathname === item.href || (item.href !== '/admin' && !!item.href && pathname.startsWith(item.href))
 }
 
 function isNavChildActive(pathname: string, child: NavChild) {
   if (child.href === '/admin/blog') {
     return pathname === '/admin/blog' || (pathname.startsWith('/admin/blog/') && !pathname.startsWith('/admin/blog/categories'))
+  }
+  if (child.href === '/admin/listings') {
+    return pathname === '/admin/listings'
+  }
+  if (child.href === '/admin/listings/drafts') {
+    return pathname === '/admin/listings/drafts'
   }
   return pathname === child.href || pathname.startsWith(`${child.href}/`)
 }
@@ -105,7 +127,12 @@ function SidebarNav({ pathname, collapsed, onNavigate }: { pathname: string; col
       <nav className="flex-1 p-3 space-y-1">
         {navItems.map((item) => {
           if (item.children) {
-            const groupActive = isBlogPath(pathname)
+            const groupActive =
+              item.label === 'Blog'
+                ? isBlogPath(pathname)
+                : item.label === 'Listings'
+                  ? isListingsPath(pathname)
+                  : false
             if (collapsed) {
               return (
                 <Link
