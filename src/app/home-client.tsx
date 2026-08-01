@@ -683,7 +683,7 @@ function AnimatedHeroSection({
           >
             {[
               { value: categories.length, label: 'Categories' },
-              { value: featuredListings.length + 15, label: 'Listings', suffix: '+' },
+              { value: 1000, label: 'Listings', suffix: '+' },
               { value: 4.5, label: 'Avg Rating', isDecimal: true },
             ].map((stat, i) => (
               <motion.div
