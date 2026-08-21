@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { isAuthenticated } from '@/lib/admin-auth'
 import { db } from '@/lib/db'
 import { isValidSlug } from '@/lib/blog/slug'
+import { revalidateBlogPost } from '@/lib/revalidate'
 
 async function resolveCategoryId(raw: unknown) {
   const categoryId = String(raw ?? '').trim()
@@ -96,6 +97,8 @@ export async function PUT(
       include: { category: { select: { id: true, name: true, slug: true } } },
     })
 
+    revalidateBlogPost(post.slug)
+
     return NextResponse.json(post)
   } catch (error) {
     console.error('Update blog post error:', error)
@@ -112,7 +115,9 @@ export async function DELETE(
     if (!authed) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const { id } = await params
+    const doomed = await db.blogPost.findUnique({ where: { id }, select: { slug: true } })
     await db.blogPost.delete({ where: { id } })
+    revalidateBlogPost(doomed?.slug)
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Delete blog post error:', error)

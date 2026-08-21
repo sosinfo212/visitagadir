@@ -3,6 +3,7 @@ import { isAuthenticated } from '@/lib/admin-auth'
 import { db } from '@/lib/db'
 import { buildImagesArray } from '@/lib/listing-images'
 import { buildListingPayload } from '@/lib/listing-payload'
+import { revalidateListing } from '@/lib/revalidate'
 
 export async function GET(
   _request: NextRequest,
@@ -62,6 +63,8 @@ export async function PUT(
       },
     })
 
+    revalidateListing(listing.slug, listing.category?.slug)
+
     return NextResponse.json({
       ...listing,
       images: buildImagesArray(listing.image, listing.gallery),
@@ -80,7 +83,12 @@ export async function DELETE(
     const authed = await isAuthenticated()
     if (!authed) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     const { id } = await params
+    const doomed = await db.listing.findUnique({
+      where: { id },
+      select: { slug: true, category: { select: { slug: true } } },
+    })
     await db.listing.delete({ where: { id } })
+    revalidateListing(doomed?.slug, doomed?.category?.slug)
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Delete listing error:', error)

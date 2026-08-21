@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { isAuthenticated } from '@/lib/admin-auth'
 import { db } from '@/lib/db'
 import { buildCategoryPayload } from '@/lib/listing-payload'
+import { revalidateCategory } from '@/lib/revalidate'
 
 export async function PUT(
   request: NextRequest,
@@ -24,6 +25,8 @@ export async function PUT(
         _count: { select: { listings: true } },
       },
     })
+
+    revalidateCategory(category.slug)
 
     return NextResponse.json(category)
   } catch (error) {
@@ -49,8 +52,12 @@ export async function DELETE(
       where: { categoryId: id },
     })
 
+    const doomed = await db.category.findUnique({ where: { id }, select: { slug: true } })
+
     // Delete the category (cascade will delete listings)
     await db.category.delete({ where: { id } })
+
+    revalidateCategory(doomed?.slug)
 
     return NextResponse.json({ success: true, deletedListings: listingCount })
   } catch (error) {

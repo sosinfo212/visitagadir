@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { isAuthenticated } from '@/lib/admin-auth'
 import { db } from '@/lib/db'
+import { revalidateListing } from '@/lib/revalidate'
 
 export async function PUT(
   request: NextRequest,
@@ -35,13 +36,15 @@ export async function PUT(
       ? approvedReviews.reduce((sum, r) => sum + r.rating, 0) / approvedCount
       : 0
 
-    await db.listing.update({
+    const affected = await db.listing.update({
       where: { id: review.listingId },
       data: {
         rating: Math.round(avgRating * 10) / 10,
         reviewCount: approvedCount,
       },
+      select: { slug: true, category: { select: { slug: true } } },
     })
+    revalidateListing(affected.slug, affected.category?.slug)
 
     return NextResponse.json(review)
   } catch (error) {
@@ -84,13 +87,15 @@ export async function DELETE(
       ? approvedReviews.reduce((sum, r) => sum + r.rating, 0) / approvedCount
       : 0
 
-    await db.listing.update({
+    const affected = await db.listing.update({
       where: { id: review.listingId },
       data: {
         rating: Math.round(avgRating * 10) / 10,
         reviewCount: approvedCount,
       },
+      select: { slug: true, category: { select: { slug: true } } },
     })
+    revalidateListing(affected.slug, affected.category?.slug)
 
     return NextResponse.json({ success: true })
   } catch (error) {
