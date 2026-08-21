@@ -50,18 +50,18 @@ const nextConfig: NextConfig = {
           .map((p) => ({
             source: `/${p.slug}`,
             destination: `/blog/${p.slug}`,
-            permanent: true,
+            statusCode: 301,
           })),
         // WP used /job/ for business listings.
-        { source: '/job/:slug*', destination: '/listing/:slug*', permanent: true },
+        { source: '/job/:slug*', destination: '/listing/:slug*', statusCode: 301 },
         // WP taxonomy pages we no longer have — send to the homepage.
-        { source: '/region/:slug*', destination: '/', permanent: true },
-        { source: '/wp-admin/:path*', destination: '/', permanent: true },
+        { source: '/region/:slug*', destination: '/', statusCode: 301 },
+        { source: '/wp-admin/:path*', destination: '/', statusCode: 301 },
         // Mapped listing-category taxonomy → current category pages.
         ...Object.entries(CATEGORY_MAP).map(([from, to]) => ({
           source: `/listing-category/${from}`,
           destination: `/category/${to}`,
-          permanent: true,
+          statusCode: 301,
         })),
       ]
       return redirects
