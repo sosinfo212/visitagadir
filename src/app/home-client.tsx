@@ -207,10 +207,9 @@ function getListingCardImage(listing: Listing): string {
   return getListingImages(listing)[0]
 }
 
-// ─── Animated Hero Section with Mouse Effects ───
+// ─── Static Hero Section (no animations) ───
 function AnimatedHeroSection({
   categories,
-  featuredListings,
   searchQuery,
   setSearchQuery,
   handleSearch,
@@ -223,105 +222,10 @@ function AnimatedHeroSection({
   handleSearch: () => void
   handleCategoryClick: (slug: string) => void
 }) {
-  const heroRef = useRef<HTMLDivElement>(null)
-  const heroBoundsRef = useRef({ left: 0, top: 0, width: 1, height: 1 })
-  const mouseRafRef = useRef(0)
-  const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 })
-  const [isHovering, setIsHovering] = useState(false)
-  const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; size: number; color: string; delay: number }>>([])
-  const [ripples, setRipples] = useState<Array<{ id: number; x: number; y: number }>>([])
-  const particleIdRef = useRef(0)
-
-  // Generate random particles on mount
-  useEffect(() => {
-    const colors = ['#f97316', '#14b8a6', '#fbbf24', '#f472b6', '#a78bfa', '#34d399']
-    const p = Array.from({ length: 10 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 4 + 2,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      delay: Math.random() * 5,
-    }))
-    setParticles(p)
-  }, [])
-
-  useEffect(() => {
-    const updateBounds = () => {
-      if (!heroRef.current) return
-      const rect = heroRef.current.getBoundingClientRect()
-      heroBoundsRef.current = {
-        left: rect.left,
-        top: rect.top,
-        width: rect.width || 1,
-        height: rect.height || 1,
-      }
-    }
-
-    updateBounds()
-    window.addEventListener('resize', updateBounds)
-    return () => window.removeEventListener('resize', updateBounds)
-  }, [])
-
-  // Mouse tracking — batch layout reads to one rAF per frame
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (mouseRafRef.current) return
-    mouseRafRef.current = requestAnimationFrame(() => {
-      mouseRafRef.current = 0
-      const { left, top, width, height } = heroBoundsRef.current
-      const x = (e.clientX - left) / width
-      const y = (e.clientY - top) / height
-      setMousePos({ x, y })
-      setIsHovering(true)
-    })
-  }, [])
-
-  const handleMouseLeave = useCallback(() => {
-    setIsHovering(false)
-    setMousePos({ x: 0.5, y: 0.5 })
-  }, [])
-
-  // Click ripple effect
-  const handleClick = useCallback((e: React.MouseEvent) => {
-    const { left, top } = heroBoundsRef.current
-    const id = Date.now()
-    setRipples(prev => [...prev, { id, x: e.clientX - left, y: e.clientY - top }])
-    setTimeout(() => {
-      setRipples(prev => prev.filter(r => r.id !== id))
-    }, 1500)
-  }, [])
-
-  // Parallax offsets based on mouse position
-  const px = (mousePos.x - 0.5) * 2 // -1 to 1
-  const py = (mousePos.y - 0.5) * 2
-
-  // 3D tilt transform
-  const tiltX = isHovering ? py * -8 : 0
-  const tiltY = isHovering ? px * 8 : 0
-
-  // Letter-by-letter text animation
-  const titleLine1 = "Discover the Best of"
-  const titleLine2 = "Agadir City"
-
   return (
-    <section
-      ref={heroRef}
-      className="relative overflow-hidden min-h-[85vh] sm:min-h-[90vh] flex items-center"
-      // Mouse-driven parallax removed: it called setState on every mousemove,
-      // re-rendering ~40 framer-motion nodes per frame (main-thread hog, ~3s
-      // CPU in GTmetrix). Entrance animations + ambient float are kept.
-      style={{ perspective: '1200px' }}
-    >
-      {/* ── Background Image with Parallax ── */}
-      <motion.div
-        className="absolute inset-0 scale-110"
-        animate={{
-          x: isHovering ? px * -20 : 0,
-          y: isHovering ? py * -20 : 0,
-          scale: isHovering ? 1.05 : 1.1,
-        }}
-        transition={{ type: 'spring', stiffness: 50, damping: 30 }}
-      >
+    <section className="relative overflow-hidden min-h-[85vh] sm:min-h-[90vh] flex items-center">
+      {/* Background image */}
+      <div className="absolute inset-0">
         <OptimizedImage
           src="/agadir-hero.jpg"
           alt="Agadir, Morocco — beach and city skyline"
@@ -330,283 +234,44 @@ function AnimatedHeroSection({
           sizes="100vw"
           className="object-cover object-center"
         />
-      </motion.div>
+      </div>
 
-      {/* ── Animated Gradient Overlay ── */}
-      <motion.div
+      {/* Gradient overlay */}
+      <div
         className="absolute inset-0 z-10"
-        animate={{
-          background: isHovering
-            ? `radial-gradient(circle at ${mousePos.x * 100}% ${mousePos.y * 100}%, rgba(249,115,22,0.75) 0%, rgba(13,148,136,0.85) 40%, rgba(154,52,18,0.9) 100%)`
-            : 'linear-gradient(135deg, rgba(234,88,12,0.9) 0%, rgba(13,148,136,0.85) 50%, rgba(154,52,18,0.9) 100%)',
+        style={{
+          background:
+            'linear-gradient(135deg, rgba(234,88,12,0.9) 0%, rgba(13,148,136,0.85) 50%, rgba(154,52,18,0.9) 100%)',
         }}
-        transition={{ duration: 0.4 }}
       />
 
-      {/* ── Cursor Glow Effect ── */}
-      {isHovering && (
-        <motion.div
-          className="absolute z-10 pointer-events-none"
-          animate={{
-            left: `${mousePos.x * 100}%`,
-            top: `${mousePos.y * 100}%`,
-          }}
-          transition={{ type: 'spring', stiffness: 200, damping: 25 }}
-          style={{
-            width: '400px',
-            height: '400px',
-            transform: 'translate(-50%, -50%)',
-            background: 'radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%)',
-            borderRadius: '50%',
-          }}
-        />
-      )}
-
-      {/* ── Floating Particles ── */}
-      <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
-        {particles.map((p) => (
-          <motion.div
-            key={p.id}
-            className="absolute rounded-full"
-            style={{
-              width: p.size,
-              height: p.size,
-              backgroundColor: p.color,
-              left: `${p.x}%`,
-              top: `${p.y}%`,
-              boxShadow: `0 0 ${p.size * 3}px ${p.color}`,
-            }}
-            animate={{
-              x: isHovering ? px * (20 + p.delay * 5) : Math.sin(Date.now() / 1000 + p.delay) * 10,
-              y: isHovering ? py * (20 + p.delay * 5) : Math.cos(Date.now() / 1000 + p.delay) * 10,
-              opacity: isHovering ? [0.4, 0.8, 0.4] : [0.2, 0.5, 0.2],
-              scale: isHovering ? [1, 1.5, 1] : [1, 1.2, 1],
-            }}
-            transition={{
-              duration: isHovering ? 1.5 : 4,
-              repeat: Infinity,
-              delay: p.delay * 0.3,
-              ease: 'easeInOut',
-            }}
-          />
-        ))}
-      </div>
-
-      {/* ── Click Ripples ── */}
-      <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
-        {ripples.map((r) => (
-          <motion.div
-            key={r.id}
-            className="absolute rounded-full border-2 border-white/40"
-            initial={{
-              left: r.x,
-              top: r.y,
-              width: 0,
-              height: 0,
-              opacity: 0.8,
-              x: '-50%',
-              y: '-50%',
-            }}
-            animate={{
-              width: 300,
-              height: 300,
-              opacity: 0,
-            }}
-            transition={{ duration: 1.2, ease: 'easeOut' }}
-          />
-        ))}
-      </div>
-
-      {/* ── Floating Moroccan Decorative Elements ── */}
-      <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
-        {/* Arch shape - top left */}
-        <motion.div
-          className="absolute -top-10 -left-10 w-48 h-48 sm:w-72 sm:h-72 border-[3px] border-white/10 rounded-t-full"
-          animate={{
-            x: isHovering ? px * 30 : 0,
-            y: isHovering ? py * 30 : 0,
-            rotate: isHovering ? px * 5 : 0,
-          }}
-          transition={{ type: 'spring', stiffness: 40, damping: 25 }}
-        />
-        {/* Diamond shape - top right */}
-        <motion.div
-          className="absolute -top-8 -right-8 w-32 h-32 sm:w-48 sm:h-48 border-[2px] border-white/8 rotate-45"
-          animate={{
-            x: isHovering ? px * -25 : 0,
-            y: isHovering ? py * 25 : 0,
-            rotate: isHovering ? 45 + px * 10 : 45,
-          }}
-          transition={{ type: 'spring', stiffness: 45, damping: 25 }}
-        />
-        {/* Circle - bottom left */}
-        <motion.div
-          className="absolute -bottom-16 -left-16 w-64 h-64 sm:w-96 sm:h-96 border-[2px] border-white/5 rounded-full"
-          animate={{
-            x: isHovering ? px * 15 : 0,
-            y: isHovering ? py * -15 : 0,
-          }}
-          transition={{ type: 'spring', stiffness: 35, damping: 25 }}
-        />
-        {/* Large circle - bottom right */}
-        <motion.div
-          className="absolute -bottom-24 -right-24 w-80 h-80 sm:w-[500px] sm:h-[500px] border border-white/5 rounded-full"
-          animate={{
-            x: isHovering ? px * -10 : 0,
-            y: isHovering ? py * -10 : 0,
-          }}
-          transition={{ type: 'spring', stiffness: 30, damping: 25 }}
-        />
-        {/* Small floating dot cluster */}
-        {[...Array(6)].map((_, i) => (
-          <motion.div
-            key={`dot-${i}`}
-            className="absolute w-2 h-2 bg-white/20 rounded-full"
-            style={{
-              left: `${15 + i * 14}%`,
-              top: `${20 + (i % 3) * 25}%`,
-            }}
-            animate={{
-              x: isHovering ? px * (10 + i * 5) : Math.sin(i) * 5,
-              y: isHovering ? py * (10 + i * 5) : Math.cos(i) * 5,
-              opacity: isHovering ? 0.5 : 0.2,
-            }}
-            transition={{ type: 'spring', stiffness: 50 + i * 10, damping: 25 }}
-          />
-        ))}
-        {/* Moroccan star pattern - top center */}
-        <motion.div
-          className="absolute top-10 left-1/2 -translate-x-1/2"
-          animate={{
-            x: isHovering ? px * 20 : 0,
-            y: isHovering ? py * 20 : 0,
-            rotate: isHovering ? px * 15 : 0,
-            opacity: isHovering ? 0.15 : 0.06,
-          }}
-          transition={{ type: 'spring', stiffness: 40, damping: 25 }}
-        >
-          <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
-            <path d="M60 0L73.5 46.5L120 60L73.5 73.5L60 120L46.5 73.5L0 60L46.5 46.5L60 0Z" fill="white" fillOpacity="0.3" />
-          </svg>
-        </motion.div>
-      </div>
-
-      {/* ── Main Content with 3D Tilt ── */}
-      <motion.div
-        className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 w-full"
-        animate={{
-          rotateX: tiltX,
-          rotateY: tiltY,
-        }}
-        transition={{ type: 'spring', stiffness: 60, damping: 25 }}
-        style={{ transformStyle: 'preserve-3d' }}
-      >
+      {/* Content */}
+      <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 w-full">
         <div className="text-center space-y-6 sm:space-y-8">
-          {/* Location Badge */}
-          <motion.div
-            initial={{ y: 30, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.6 }}
-            style={{ transform: 'translateZ(40px)' }}
-          >
+          {/* Location badge */}
+          <div>
             <Badge className="bg-white/15 text-white border-white/25 hover:bg-white/25 px-5 py-1.5 text-sm backdrop-blur-sm cursor-default">
-              <motion.span
-                animate={{ rotate: isHovering ? [0, 10, -10, 0] : 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                <MapPin className="h-3.5 w-3.5 mr-1.5" />
-              </motion.span>
+              <MapPin className="h-3.5 w-3.5 mr-1.5" />
               Agadir, Morocco
             </Badge>
-          </motion.div>
-
-          {/* Title with letter-by-letter animation */}
-          <div style={{ transform: 'translateZ(60px)' }}>
-            <motion.h2 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-white leading-tight tracking-tight">
-              {/* Line 1: letter animation */}
-              <span className="inline-flex flex-wrap justify-center">
-                {titleLine1.split('').map((char, i) => (
-                  <motion.span
-                    key={`l1-${i}`}
-                    initial={{ y: 60, opacity: 0, rotateX: -90 }}
-                    animate={{ y: 0, opacity: 1, rotateX: 0 }}
-                    transition={{ delay: 0.3 + i * 0.03, duration: 0.5, ease: [0.215, 0.61, 0.355, 1] }}
-                    className="inline-block"
-                    style={{
-                      textShadow: isHovering
-                        ? `${px * 4}px ${py * 4}px 20px rgba(0,0,0,0.3)`
-                        : '0 0 0 transparent',
-                    }}
-                  >
-                    {char === ' ' ? '\u00A0' : char}
-                  </motion.span>
-                ))}
-              </span>
-              <br />
-              {/* Line 2: gradient text with wave animation */}
-              <motion.span
-                className="inline-flex flex-wrap justify-center bg-gradient-to-r from-amber-200 via-yellow-100 to-amber-200 bg-clip-text text-transparent"
-                animate={{
-                  backgroundPosition: isHovering ? ['0% 50%', '100% 50%', '0% 50%'] : undefined,
-                }}
-                transition={{ duration: 3, repeat: Infinity }}
-                style={{
-                  backgroundSize: '200% 100%',
-                  textShadow: isHovering ? `${px * 6}px ${py * 6}px 30px rgba(251,191,36,0.3)` : 'none',
-                  filter: isHovering ? `drop-shadow(0 0 ${8}px rgba(251,191,36,0.4))` : 'none',
-                }}
-              >
-                {titleLine2.split('').map((char, i) => (
-                  <motion.span
-                    key={`l2-${i}`}
-                    initial={{ y: 80, opacity: 0, scale: 0.5 }}
-                    animate={{
-                      y: 0,
-                      opacity: 1,
-                      scale: 1,
-                    }}
-                    transition={{ delay: 0.6 + i * 0.04, duration: 0.6, ease: [0.215, 0.61, 0.355, 1] }}
-                    className="inline-block"
-                    whileHover={{
-                      scale: 1.3,
-                      y: -8,
-                      transition: { duration: 0.2 },
-                    }}
-                  >
-                    {char === ' ' ? '\u00A0' : char}
-                  </motion.span>
-                ))}
-              </motion.span>
-            </motion.h2>
           </div>
 
-          {/* Subtitle */}
-          <motion.p
-            initial={{ y: 30, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 1.0, duration: 0.6 }}
-            className="text-lg sm:text-xl text-white/75 max-w-2xl mx-auto leading-relaxed"
-            style={{ transform: 'translateZ(30px)' }}
-          >
-            Your ultimate guide to restaurants, hotels, beaches, shopping, services, and everything Agadir has to offer.
-          </motion.p>
+          {/* Title */}
+          <h2 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-white leading-tight tracking-tight">
+            <span className="block">Discover the Best of</span>
+            <span className="block bg-gradient-to-r from-amber-200 via-yellow-100 to-amber-200 bg-clip-text text-transparent">
+              Agadir City
+            </span>
+          </h2>
 
-          {/* Search Bar with Magnetic Effect */}
-          <motion.div
-            initial={{ y: 40, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 1.2, duration: 0.6 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-xl mx-auto"
-            style={{ transform: 'translateZ(50px)' }}
-          >
-            <motion.div
-              className="relative w-full"
-              animate={{
-                x: isHovering ? px * 5 : 0,
-                y: isHovering ? py * 5 : 0,
-              }}
-              transition={{ type: 'spring', stiffness: 150, damping: 20 }}
-            >
+          {/* Subtitle */}
+          <p className="text-lg sm:text-xl text-white/75 max-w-2xl mx-auto leading-relaxed">
+            Your ultimate guide to restaurants, hotels, beaches, shopping, services, and everything Agadir has to offer.
+          </p>
+
+          {/* Search bar */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-xl mx-auto">
+            <div className="relative w-full">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-orange-400" />
               <Input
                 placeholder="What are you looking for?"
@@ -615,117 +280,54 @@ function AnimatedHeroSection({
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               />
-            </motion.div>
-            <motion.div
-              animate={{
-                x: isHovering ? px * 8 : 0,
-                y: isHovering ? py * 8 : 0,
-              }}
-              transition={{ type: 'spring', stiffness: 120, damping: 18 }}
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.97 }}
+            </div>
+            <Button
+              size="lg"
+              className="h-13 px-8 bg-gradient-to-r from-orange-500 to-teal-500 hover:from-orange-600 hover:to-teal-600 text-white font-semibold rounded-2xl shadow-2xl w-full sm:w-auto border-0"
+              onClick={handleSearch}
             >
-              <Button
-                size="lg"
-                className="h-13 px-8 bg-gradient-to-r from-orange-500 to-teal-500 hover:from-orange-600 hover:to-teal-600 text-white font-semibold rounded-2xl shadow-2xl w-full sm:w-auto border-0"
-                onClick={handleSearch}
-              >
-                <motion.span
-                  animate={{ x: isHovering ? [0, 3, 0] : 0 }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                  className="flex items-center gap-2"
-                >
-                  Explore Now
-                  <ChevronRight className="h-4 w-4" />
-                </motion.span>
-              </Button>
-            </motion.div>
-          </motion.div>
+              <span className="flex items-center gap-2">
+                Explore Now
+                <ChevronRight className="h-4 w-4" />
+              </span>
+            </Button>
+          </div>
 
-          {/* Quick Category Pills */}
-          <motion.div
-            initial={{ y: 30, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 1.4, duration: 0.6 }}
-            className="flex flex-wrap items-center justify-center gap-2 pt-2"
-            style={{ transform: 'translateZ(25px)' }}
-          >
-            {categories.slice(0, 5).map((cat, i) => (
-              <motion.button
+          {/* Quick category pills */}
+          <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+            {categories.slice(0, 5).map((cat) => (
+              <button
                 key={cat.id}
                 type="button"
                 aria-label={cat.name}
                 onClick={() => handleCategoryClick(cat.slug)}
-                className="px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/15 text-white/90 text-sm hover:bg-white/20 hover:text-white transition-all duration-300 flex items-center gap-1.5"
-                whileHover={{ scale: 1.08, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-                animate={{
-                  x: isHovering ? px * (3 + i * 2) : 0,
-                  y: isHovering ? py * (3 + i * 2) : 0,
-                }}
-                transition={{ type: 'spring', stiffness: 100, damping: 20 }}
-                initial={{ opacity: 0, scale: 0.8 }}
-                viewport={{ once: true }}
+                className="px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/15 text-white/90 text-sm hover:bg-white/20 hover:text-white transition-colors flex items-center gap-1.5"
               >
                 <span className="opacity-70">{getCategoryIcon(cat.icon)}</span>
                 <span className="hidden sm:inline text-xs">{cat.name.split(' & ')[0]}</span>
-              </motion.button>
+              </button>
             ))}
-          </motion.div>
+          </div>
 
-          {/* Stats with counter animation */}
-          <motion.div
-            initial={{ y: 30, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 1.6, duration: 0.6 }}
-            className="flex items-center justify-center gap-6 sm:gap-10 pt-4"
-            style={{ transform: 'translateZ(20px)' }}
-          >
+          {/* Stats */}
+          <div className="flex items-center justify-center gap-6 sm:gap-10 pt-4">
             {[
-              { value: categories.length, label: 'Categories' },
-              { value: 1000, label: 'Listings', suffix: '+' },
-              { value: 4.5, label: 'Avg Rating', isDecimal: true },
-            ].map((stat, i) => (
-              <motion.div
-                key={stat.label}
-                className="text-center"
-                animate={{
-                  x: isHovering ? px * (2 + i * 3) : 0,
-                  y: isHovering ? py * (2 + i * 3) : 0,
-                }}
-                transition={{ type: 'spring', stiffness: 80, damping: 20 }}
-              >
-                <motion.div
-                  className="text-2xl sm:text-3xl font-bold text-white"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 1.8 + i * 0.1, type: 'spring', stiffness: 200 }}
-                >
-                  {stat.isDecimal ? stat.value : stat.value}
-                  {stat.suffix || ''}
-                </motion.div>
+              { value: `${categories.length}`, label: 'Categories' },
+              { value: '1000+', label: 'Listings' },
+              { value: '4.5', label: 'Avg Rating' },
+            ].map((stat) => (
+              <div key={stat.label} className="text-center">
+                <div className="text-2xl sm:text-3xl font-bold text-white">{stat.value}</div>
                 <div className="text-xs sm:text-sm text-white/75 mt-0.5">{stat.label}</div>
-              </motion.div>
+              </div>
             ))}
-            {/* Separators */}
-            <div className="absolute flex items-center justify-center gap-6 sm:gap-10 w-full pointer-events-none">
-              <div className="w-px h-8 bg-white/15" />
-              <div className="w-px h-8 bg-white/15" />
-            </div>
-          </motion.div>
+          </div>
 
           {/* Scroll indicator */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 2.2 }}
-            className="pt-6 sm:pt-8"
-            style={{ transform: 'translateZ(10px)' }}
-          >
-            <motion.div
-              className="flex flex-col items-center gap-1.5 text-white/40 cursor-pointer"
-              animate={{ y: [0, 6, 0] }}
-              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          <div className="pt-6 sm:pt-8">
+            <button
+              type="button"
+              className="flex flex-col items-center gap-1.5 text-white/40 mx-auto cursor-pointer"
               onClick={() => {
                 const el = document.getElementById('categories-section')
                 el?.scrollIntoView({ behavior: 'smooth' })
@@ -735,24 +337,17 @@ function AnimatedHeroSection({
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M10 4v12M4 10l6 6 6-6" />
               </svg>
-            </motion.div>
-          </motion.div>
+            </button>
+          </div>
         </div>
-      </motion.div>
+      </div>
 
-      {/* ── Animated Wave Bottom Border ── */}
+      {/* Wave bottom border */}
       <div className="absolute bottom-0 left-0 right-0 z-20">
         <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
-          <motion.path
-            initial={false}
+          <path
             d="M0 60L48 52C96 44 192 28 288 32C384 36 480 60 576 68C672 76 768 68 864 56C960 44 1056 28 1152 28C1248 28 1344 44 1392 52L1440 60V120H1392C1344 120 1248 120 1152 120C1056 120 960 120 864 120C768 120 672 120 576 120C480 120 384 120 288 120C192 120 96 120 48 120H0V60Z"
             fill="white"
-            animate={{
-              d: isHovering
-                ? "M0 80L48 68C96 56 192 32 288 36C384 40 480 72 576 76C672 80 768 60 864 48C960 36 1056 32 1152 36C1248 40 1344 52 1392 58L1440 64V120H1392C1344 120 1248 120 1152 120C1056 120 960 120 864 120C768 120 672 120 576 120C480 120 384 120 288 120C192 120 96 120 48 120H0V80Z"
-                : "M0 60L48 52C96 44 192 28 288 32C384 36 480 60 576 68C672 76 768 68 864 56C960 44 1056 28 1152 28C1248 28 1344 44 1392 52L1440 60V120H1392C1344 120 1248 120 1152 120C1056 120 960 120 864 120C768 120 672 120 576 120C480 120 384 120 288 120C192 120 96 120 48 120H0V60Z",
-            }}
-            transition={{ duration: 0.8, ease: 'easeInOut' }}
           />
         </svg>
       </div>
