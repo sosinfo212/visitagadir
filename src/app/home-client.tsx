@@ -235,7 +235,7 @@ function AnimatedHeroSection({
   // Generate random particles on mount
   useEffect(() => {
     const colors = ['#f97316', '#14b8a6', '#fbbf24', '#f472b6', '#a78bfa', '#34d399']
-    const p = Array.from({ length: 30 }, (_, i) => ({
+    const p = Array.from({ length: 10 }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
@@ -307,9 +307,9 @@ function AnimatedHeroSection({
     <section
       ref={heroRef}
       className="relative overflow-hidden min-h-[85vh] sm:min-h-[90vh] flex items-center"
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      onClick={handleClick}
+      // Mouse-driven parallax removed: it called setState on every mousemove,
+      // re-rendering ~40 framer-motion nodes per frame (main-thread hog, ~3s
+      // CPU in GTmetrix). Entrance animations + ambient float are kept.
       style={{ perspective: '1200px' }}
     >
       {/* ── Background Image with Parallax ── */}
