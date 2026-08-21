@@ -621,14 +621,8 @@ export default function Home({
         <AnimatePresence mode="wait">
           {/* HOME VIEW */}
           {view === 'home' && (
-            <motion.div
-              key="home"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              {/* Animated Hero Section */}
+            <div key="home">
+              {/* Hero Section */}
               <AnimatedHeroSection
                 categories={categories}
                 featuredListings={featuredListings}
@@ -650,12 +644,10 @@ export default function Home({
                   <p className="text-muted-foreground mt-2">Find exactly what you need in Agadir</p>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-                  {categories.map((cat, index) => (
-                    <motion.button
+                  {categories.map((cat) => (
+                    <button
                       key={cat.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05 }}
+                      type="button"
                       onClick={() => handleCategoryClick(cat.slug)}
                       className={`group relative p-4 sm:p-5 rounded-2xl border text-left transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${
                         categoryBgColors[cat.slug] || 'bg-gray-50 border-gray-200 hover:bg-gray-100'
@@ -672,7 +664,7 @@ export default function Home({
                       )}
                       <p className="text-xs text-muted-foreground">{cat.listingCount} listings</p>
                       <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50 group-hover:text-foreground group-hover:translate-x-1 transition-all" />
-                    </motion.button>
+                    </button>
                   ))}
                 </div>
               </section>
@@ -691,13 +683,8 @@ export default function Home({
                     </Badge>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                    {featuredListings.slice(0, 9).map((listing, index) => (
-                      <motion.div
-                        key={listing.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.07 }}
-                      >
+                    {featuredListings.slice(0, 9).map((listing) => (
+                      <div key={listing.id}>
                         <Card
                           className="cursor-pointer group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden border-0 shadow-sm"
                           onClick={() => handleListingClick(listing)}
@@ -742,7 +729,7 @@ export default function Home({
                             </a>
                           </CardContent>
                         </Card>
-                      </motion.div>
+                      </div>
                     ))}
                   </div>
 
@@ -769,13 +756,8 @@ export default function Home({
                     </Link>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-                    {latestBlogPosts.map((post, index) => (
-                      <motion.div
-                        key={post.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.08 }}
-                      >
+                    {latestBlogPosts.map((post) => (
+                      <div key={post.id}>
                         <Link href={`/blog/${post.slug}`}>
                           <Card className="group h-full hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden border-0 shadow-sm">
                             <div className="relative h-44 overflow-hidden bg-gradient-to-br from-orange-100 to-teal-100">
@@ -814,7 +796,7 @@ export default function Home({
                             </CardContent>
                           </Card>
                         </Link>
-                      </motion.div>
+                      </div>
                     ))}
                   </div>
                   <div className="mt-6 text-center sm:hidden">
@@ -877,7 +859,7 @@ export default function Home({
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 w-full min-w-0">
                 <DynamicAdSlot location="bottom_banner" className="w-full min-w-0 min-h-[90px]" />
               </div>
-            </motion.div>
+            </div>
           )}
 
           {/* CATEGORY VIEW */}
