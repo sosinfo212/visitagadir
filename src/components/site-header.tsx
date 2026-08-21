@@ -34,10 +34,16 @@ function headerBrandingFromSettings(branding?: AppSettingsPublic | null) {
   }
 }
 
-export function SiteHeader({ branding }: { branding?: AppSettingsPublic | null }) {
+export function SiteHeader({
+  branding,
+  categories = [],
+}: {
+  branding?: AppSettingsPublic | null
+  categories?: CategoryWithCount[]
+}) {
   return (
     <Suspense fallback={<SiteHeaderFallback />}>
-      <SiteHeaderInner initialBranding={branding} />
+      <SiteHeaderInner initialBranding={branding} initialCategories={categories} />
     </Suspense>
   )
 }
@@ -52,13 +58,19 @@ function SiteHeaderFallback() {
   )
 }
 
-function SiteHeaderInner({ initialBranding }: { initialBranding?: AppSettingsPublic | null }) {
+function SiteHeaderInner({
+  initialBranding,
+  initialCategories = [],
+}: {
+  initialBranding?: AppSettingsPublic | null
+  initialCategories?: CategoryWithCount[]
+}) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const { data: session, status } = useSession()
 
-  const [categories, setCategories] = useState<CategoryWithCount[]>([])
+  const [categories, setCategories] = useState<CategoryWithCount[]>(initialCategories)
   const [siteBranding, setSiteBranding] = useState(() => headerBrandingFromSettings(initialBranding))
   const [searchQuery, setSearchQuery] = useState('')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -79,23 +91,24 @@ function SiteHeaderInner({ initialBranding }: { initialBranding?: AppSettingsPub
     [categories, activeCategorySlug],
   )
 
+  // Categories + branding now arrive as server props (see root layout →
+  // PublicChrome). Only fall back to a client fetch if the server passed
+  // nothing (e.g. layout DB read failed). Removes 2 API calls per page load.
   useEffect(() => {
-    Promise.all([
-      fetch('/api/categories').then((r) => r.json()),
-      fetch('/api/settings/public').then((r) => r.json()).catch(() => null),
-    ]).then(([cats, branding]) => {
-      const catsWithCount = (Array.isArray(cats) ? cats : []).map(
-        (c: CategoryWithCount & { _count?: { listings: number } }) => ({
-          ...c,
-          listingCount: c.listingCount ?? c._count?.listings ?? 0,
-        }),
-      )
-      setCategories(catsWithCount)
-      if (branding?.siteName) {
-        setSiteBranding(headerBrandingFromSettings(branding))
-      }
-    })
-  }, [])
+    if (initialCategories.length > 0) return
+    fetch('/api/categories')
+      .then((r) => r.json())
+      .then((cats) => {
+        const catsWithCount = (Array.isArray(cats) ? cats : []).map(
+          (c: CategoryWithCount & { _count?: { listings: number } }) => ({
+            ...c,
+            listingCount: c.listingCount ?? c._count?.listings ?? 0,
+          }),
+        )
+        setCategories(catsWithCount)
+      })
+      .catch(() => { /* non-critical */ })
+  }, [initialCategories.length])
 
   useEffect(() => {
     const q = searchParams.get('search')?.trim() ?? ''

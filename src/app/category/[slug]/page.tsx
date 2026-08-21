@@ -29,6 +29,9 @@ interface PageProps {
   params: Promise<{ slug: string }>
 }
 
+// ISR: serve cached HTML for 1h; revalidatePath on category/listing edits.
+export const revalidate = 3600
+
 async function loadCategory(slug: string) {
   return db.category.findUnique({ where: { slug } })
 }
@@ -61,11 +64,24 @@ export default async function CategoryPage({ params }: PageProps) {
     getRelatedCategories(slug, 8),
   ])
 
-  // Load full listing rows for the rendered grid (image etc).
+  // Load listing rows for the rendered grid. Explicit select keeps the
+  // heavy TEXT/MEDIUMTEXT columns (description, logo, SEO overrides) out —
+  // the grid only needs identity, address, rating, and the cover image.
   const fullListings = await db.listing.findMany({
     where: { categoryId: cat.id, published: true },
     take: 60,
     orderBy: [{ featured: 'desc' }, { rating: 'desc' }],
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      address: true,
+      rating: true,
+      reviewCount: true,
+      featured: true,
+      image: true,
+      gallery: true,
+    },
   })
   const listingsWithImage = fullListings.map(l => ({
     ...l,

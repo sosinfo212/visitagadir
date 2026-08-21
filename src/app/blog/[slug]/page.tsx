@@ -23,6 +23,9 @@ interface PageProps {
   params: Promise<{ slug: string }>
 }
 
+// ISR: cache published post HTML for 1h; revalidatePath on publish/edit.
+export const revalidate = 3600
+
 const LISTINGS_HEADING: Record<string, string> = {
   'travel-guides': 'Tours & excursions',
   'beaches-nature': 'Beaches & outdoor spots',

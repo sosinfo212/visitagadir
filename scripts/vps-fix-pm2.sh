@@ -9,7 +9,7 @@ rsync -a "$APP_DIR/public/uploads/" "$STANDALONE/public/uploads/" 2>/dev/null ||
 
 pm2 delete visitagadir 2>/dev/null || true
 cd "$STANDALONE"
-HOSTNAME=0.0.0.0 PORT=3000 NODE_ENV=production pm2 start server.js --name visitagadir
+HOSTNAME=0.0.0.0 PORT=3000 NODE_ENV=production pm2 start server.js --name visitagadir -i max --max-memory-restart 1500M
 pm2 save
 
 sleep 4

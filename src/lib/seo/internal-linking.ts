@@ -20,7 +20,36 @@
 
 import { db } from '@/lib/db'
 import { getListingFeaturedImage } from '@/lib/listing-images'
-import type { Listing, Category } from '@prisma/client'
+
+/**
+ * Minimal column set for listing "card" queries. Avoids dragging heavy
+ * TEXT/MEDIUMTEXT/LONGTEXT columns (description, logo, gallery-of-base64,
+ * SEO overrides…) into internal-linking reads that only render a card link.
+ * `image` + `gallery` are kept because the featured-image helper needs them.
+ */
+const LISTING_CARD_SELECT = {
+  name: true,
+  slug: true,
+  city: true,
+  rating: true,
+  featured: true,
+  image: true,
+  gallery: true,
+  category: { select: { name: true, slug: true } },
+} as const
+
+type ListingCardRow = {
+  name: string
+  slug: string
+  city: string
+  rating: number
+  featured: boolean
+  image: string | null
+  gallery: string | null
+  category: { name: string; slug: string }
+  latitude?: number | null
+  longitude?: number | null
+}
 
 export interface CategoryLink {
   name: string
@@ -53,7 +82,7 @@ export async function getFeaturedListings(limit = 8): Promise<ListingLink[]> {
     where: { featured: true, published: true },
     orderBy: { rating: 'desc' },
     take: limit,
-    include: { category: { select: { name: true, slug: true } } },
+    select: LISTING_CARD_SELECT,
   })
   return rows.map(mapListing)
 }
@@ -78,7 +107,7 @@ export async function getListingsInCategory(slug: string, limit = 50): Promise<L
     where: { categoryId: cat.id, published: true },
     orderBy: [{ featured: 'desc' }, { rating: 'desc' }],
     take: limit,
-    include: { category: { select: { name: true, slug: true } } },
+    select: LISTING_CARD_SELECT,
   })
   return rows.map(mapListing)
 }
@@ -96,7 +125,7 @@ export async function getRelatedInCategory(args: {
     },
     orderBy: [{ featured: 'desc' }, { rating: 'desc' }],
     take: args.limit ?? 6,
-    include: { category: { select: { name: true, slug: true } } },
+    select: LISTING_CARD_SELECT,
   })
   return rows.map(mapListing)
 }
@@ -114,7 +143,7 @@ export async function getSameCity(args: {
     },
     orderBy: [{ featured: 'desc' }, { rating: 'desc' }],
     take: args.limit ?? 6,
-    include: { category: { select: { name: true, slug: true } } },
+    select: LISTING_CARD_SELECT,
   })
   return rows.map(mapListing)
 }
@@ -148,8 +177,8 @@ export async function getNearby(args: {
       latitude: { gte: args.lat - deltaLat, lte: args.lat + deltaLat },
       longitude: { gte: args.lng - deltaLng, lte: args.lng + deltaLng },
     },
-    take: 200,
-    include: { category: { select: { name: true, slug: true } } },
+    take: 80,
+    select: { ...LISTING_CARD_SELECT, latitude: true, longitude: true },
   })
 
   const ranked = candidates
@@ -185,16 +214,14 @@ export async function getListingsInCity(city: string, limit = 50): Promise<Listi
     where: { city, published: true },
     orderBy: [{ featured: 'desc' }, { rating: 'desc' }],
     take: limit,
-    include: { category: { select: { name: true, slug: true } } },
+    select: LISTING_CARD_SELECT,
   })
   return rows.map(mapListing)
 }
 
 // ─── Internals ─────────────────────────────────────────
 
-type ListingRow = Listing & { category: Pick<Category, 'name' | 'slug'> }
-
-function mapListing(l: ListingRow): ListingLink {
+function mapListing(l: ListingCardRow): ListingLink {
   return {
     name: l.name,
     slug: l.slug,

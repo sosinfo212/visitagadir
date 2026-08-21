@@ -22,21 +22,25 @@ function footerBrandingFromSettings(branding?: AppSettingsPublic | null) {
   }
 }
 
-export function SiteFooter({ branding }: { branding?: AppSettingsPublic | null }) {
-  const [categories, setCategories] = useState<CategoryLink[]>([])
-  const [footerBranding, setFooterBranding] = useState(() => footerBrandingFromSettings(branding))
+export function SiteFooter({
+  branding,
+  categories: initialCategories = [],
+}: {
+  branding?: AppSettingsPublic | null
+  categories?: CategoryLink[]
+}) {
+  const [categories, setCategories] = useState<CategoryLink[]>(initialCategories)
+  const [footerBranding] = useState(() => footerBrandingFromSettings(branding))
 
+  // Categories + branding come from server props (root layout). Fall back to
+  // a client fetch only when the server provided none.
   useEffect(() => {
-    Promise.all([
-      fetch('/api/categories').then((r) => r.json()),
-      fetch('/api/settings/public').then((r) => r.json()).catch(() => null),
-    ]).then(([cats, settings]) => {
-      setCategories(Array.isArray(cats) ? cats : [])
-      if (settings?.siteName) {
-        setFooterBranding(footerBrandingFromSettings(settings))
-      }
-    })
-  }, [])
+    if (initialCategories.length > 0) return
+    fetch('/api/categories')
+      .then((r) => r.json())
+      .then((cats) => setCategories(Array.isArray(cats) ? cats : []))
+      .catch(() => { /* non-critical */ })
+  }, [initialCategories.length])
 
   const firstCategories = categories.slice(0, 5)
   const moreCategories = categories.slice(5, 10)

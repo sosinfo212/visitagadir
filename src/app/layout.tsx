@@ -6,6 +6,7 @@ import { DeferredClientWidgets } from "@/components/deferred-client-widgets";
 import { AuthSessionProvider } from "@/components/providers/session-provider";
 import { PublicChrome } from "@/components/public-chrome";
 import { getAppSettings, toPublicSettings, type AppSettingsPublic } from "@/lib/app-settings";
+import { getNavCategories, type NavCategory } from "@/lib/nav-data";
 
 import { getSeoSettings, getSchemaSettings } from "@/lib/seo/repository";
 import { buildMetadata } from "@/lib/seo/metadata";
@@ -51,13 +52,16 @@ export default async function RootLayout({
   // — schema.org explicitly allows multiple JSON-LD blocks per document.
   let schemas: unknown[] = [];
   let branding: AppSettingsPublic | null = null;
+  let navCategories: NavCategory[] = [];
   try {
-    const [seo, schemaCfg, settings] = await Promise.all([
+    const [seo, schemaCfg, settings, categories] = await Promise.all([
       getSeoSettings(),
       getSchemaSettings(),
       getAppSettings(),
+      getNavCategories(),
     ]);
     branding = toPublicSettings(settings);
+    navCategories = categories;
     schemas = [
       buildWebSiteSchema(seo, schemaCfg),
       buildOrganizationSchema(seo, schemaCfg),
@@ -65,6 +69,7 @@ export default async function RootLayout({
   } catch {
     schemas = [];
     branding = null;
+    navCategories = [];
   }
 
   return (
@@ -73,7 +78,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
         <AuthSessionProvider>
-          <PublicChrome branding={branding}>{children}</PublicChrome>
+          <PublicChrome branding={branding} categories={navCategories}>{children}</PublicChrome>
         </AuthSessionProvider>
         <Toaster />
         <DeferredClientWidgets />

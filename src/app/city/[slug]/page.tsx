@@ -16,6 +16,9 @@ interface PageProps {
   params: Promise<{ slug: string }>
 }
 
+// ISR: cache city hub HTML for 1h instead of rebuilding from DB per request.
+export const revalidate = 3600
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
   const bundle = await getCitySeoBundle(slug)

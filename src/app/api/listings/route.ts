@@ -62,7 +62,25 @@ export async function GET(request: NextRequest) {
 
     const listings = await db.listing.findMany({
       where,
-      include: {
+      // Explicit select: return only what the client card/detail renders.
+      // Avoids dragging logo (MEDIUMTEXT), SEO overrides, coordinates, and
+      // timestamps into every list response. `image`/`gallery` are needed to
+      // derive the ordered `images` array below.
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        address: true,
+        phone: true,
+        website: true,
+        email: true,
+        image: true,
+        gallery: true,
+        rating: true,
+        reviewCount: true,
+        featured: true,
+        categoryId: true,
         category: {
           select: { name: true, slug: true, icon: true },
         },

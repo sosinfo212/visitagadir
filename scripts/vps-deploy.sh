@@ -83,7 +83,7 @@ cp -f "$APP_DIR/.env" "$APP_DIR/.next/standalone/.env"
 mkdir -p "$APP_DIR/.next/standalone/public/uploads/blog" "$APP_DIR/.next/standalone/public/uploads/listings/imported"
 pm2 delete visitagadir 2>/dev/null || true
 cd "$APP_DIR/.next/standalone"
-HOSTNAME=0.0.0.0 PORT=3000 NODE_ENV=production pm2 start server.js --name visitagadir
+HOSTNAME=0.0.0.0 PORT=3000 NODE_ENV=production pm2 start server.js --name visitagadir -i max --max-memory-restart 1500M
 pm2 save
 pm2 startup systemd -u root --hp /root | tail -1 | bash || true
 

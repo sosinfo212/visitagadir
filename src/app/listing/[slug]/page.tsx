@@ -13,6 +13,10 @@ interface PageProps {
   params: Promise<{ slug: string }>
 }
 
+// ISR: cache the rendered page for 1h instead of re-querying MySQL on every
+// hit. Admin edits should call revalidatePath('/listing/<slug>') to publish.
+export const revalidate = 3600
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
   const bundle = await getListingSeoBundle(slug)
