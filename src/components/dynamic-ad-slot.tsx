@@ -123,7 +123,7 @@ function AdSenseSlot({
 export function DynamicAdSlot({
   location,
   className = '',
-  lazy = false,
+  lazy = true,
 }: {
   location: string
   className?: string
@@ -133,12 +133,15 @@ export function DynamicAdSlot({
   const [visible, setVisible] = useState(!lazy)
   const containerRef = useRef<HTMLDivElement>(null)
 
+  // Only fetch the ad config once the slot is (near) visible — below-fold ads
+  // no longer pull /api/ads + adsbygoogle.js into the initial page load.
   useEffect(() => {
+    if (!visible) return
     fetch('/api/ads')
       .then((r) => r.json())
       .then((data) => setConfig(data))
       .catch(() => setConfig(null))
-  }, [])
+  }, [visible])
 
   useEffect(() => {
     if (!lazy || visible) return
