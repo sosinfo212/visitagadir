@@ -29,13 +29,37 @@ function uniqueId(base: string, usedIds: Set<string>): string {
   return id
 }
 
+/**
+ * Ensure every `<img>` in content HTML has descriptive alt text. Imported
+ * (e.g. WordPress) content frequently ships images with an empty or missing
+ * alt attribute — flagged by crawlers as "missing alt text". When no usable
+ * alt is present we fall back to the post title so the image still describes
+ * the page it lives on.
+ */
+function injectImgAlt(html: string, fallback?: string): string {
+  const safe = (fallback ?? '').trim().replace(/"/g, '&quot;')
+  if (!safe) return html
+  return html.replace(/<img\b[^>]*>/gi, (tag) => {
+    const m = /\balt\s*=\s*("([^"]*)"|'([^']*)')/i.exec(tag)
+    if (m) {
+      const val = (m[2] ?? m[3] ?? '').trim()
+      if (val) return tag // already has descriptive alt
+      return tag.replace(/\balt\s*=\s*("[^"]*"|'[^']*')/i, `alt="${safe}"`)
+    }
+    return tag.replace(/<img\b/i, `<img alt="${safe}"`)
+  })
+}
+
 /** Extract h2/h3 headings for TOC and inject anchor ids into HTML content. */
-export function prepareBlogContent(content: string): { items: TocItem[]; html: string } {
+export function prepareBlogContent(
+  content: string,
+  fallbackImgAlt?: string,
+): { items: TocItem[]; html: string } {
   const items: TocItem[] = []
   const usedIds = new Set<string>()
 
   if (isHtmlContent(content)) {
-    const html = content.replace(
+    const withIds = content.replace(
       /<h([23])(\s[^>]*)?>([\s\S]*?)<\/h\1>/gi,
       (match, levelStr, attrs = '', inner) => {
         const text = stripHtml(inner)
@@ -49,7 +73,7 @@ export function prepareBlogContent(content: string): { items: TocItem[]; html: s
         return `<h${level}${attrs} id="${id}">${inner}</h${level}>`
       },
     )
-    return { items, html }
+    return { items, html: injectImgAlt(withIds, fallbackImgAlt) }
   }
 
   const lines = content.split('\n')
@@ -85,7 +109,7 @@ export function prepareBlogContent(content: string): { items: TocItem[]; html: s
   }
   flushParagraph()
 
-  return { items, html: htmlParts.join('\n') }
+  return { items, html: injectImgAlt(htmlParts.join('\n'), fallbackImgAlt) }
 }
 
 export function estimateReadTimeMinutes(content: string): number {

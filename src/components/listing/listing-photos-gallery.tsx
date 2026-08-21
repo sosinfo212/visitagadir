@@ -132,7 +132,7 @@ export function ListingPhotosGallery({ name, images: rawImages }: ListingPhotosG
                   }`}
                 >
                   <div className="relative w-full h-full">
-                    <OptimizedImage src={src} alt="" fill className="object-cover" sizes="96px" />
+                    <OptimizedImage src={src} alt={`${name} — photo ${i + 1}`} fill className="object-cover" sizes="96px" />
                   </div>
                 </button>
               ))}

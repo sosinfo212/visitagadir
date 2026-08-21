@@ -324,7 +324,7 @@ function AnimatedHeroSection({
       >
         <OptimizedImage
           src="/agadir-hero.jpg"
-          alt=""
+          alt="Agadir, Morocco — beach and city skyline"
           fill
           priority
           sizes="100vw"

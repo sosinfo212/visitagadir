@@ -75,7 +75,7 @@ export default async function BlogPostPage({ params }: PageProps) {
     getBlogSidebarListings(post.category?.slug, 4),
   ])
 
-  const { items: toc, html: contentHtml } = prepareBlogContent(post.content)
+  const { items: toc, html: contentHtml } = prepareBlogContent(post.content, post.title)
   const readTimeMinutes = estimateReadTimeMinutes(post.content)
   const listingsHeading =
     (post.category?.slug && LISTINGS_HEADING[post.category.slug]) || 'Featured in Agadir'

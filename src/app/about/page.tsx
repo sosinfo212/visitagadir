@@ -265,7 +265,7 @@ export default function AboutPage() {
         <div className="absolute inset-0">
           <OptimizedImage
             src="/listings/default.jpg"
-            alt=""
+            alt="Agadir, Morocco"
             fill
             sizes="100vw"
             className="object-cover object-center"

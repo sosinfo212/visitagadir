@@ -45,7 +45,7 @@ export function BlogPostRightSidebar({
                   {post.coverImage ? (
                     <OptimizedImage
                       src={post.coverImage}
-                      alt=""
+                      alt={post.title}
                       fill
                       className="object-cover"
                       sizes="64px"
@@ -89,7 +89,7 @@ export function BlogPostRightSidebar({
                 <div className="relative w-14 h-14 shrink-0 rounded-lg overflow-hidden bg-gray-100">
                   <OptimizedImage
                     src={listing.image ?? LISTING_DEFAULT_IMAGE}
-                    alt=""
+                    alt={listing.name}
                     fill
                     className="object-cover"
                     sizes="56px"
