@@ -3,9 +3,12 @@ set -euo pipefail
 
 export DEBIAN_FRONTEND=noninteractive
 
-DB_PASS='x4kqu1mPwEZ8FiM7AeYf1I6g'
-NEXTAUTH_SECRET='12rgvxAnp5nZdlIPooaQsi0F0PW84u9o'
-ADMIN_SECRET_KEY='d07J664T2XUKTEwufARzuXZFBTyyTxsU'
+# Secrets are NOT hard-coded — pass them in the environment, e.g.:
+#   DB_PASS=... NEXTAUTH_SECRET=... ADMIN_SECRET_KEY=... ./scripts/vps-deploy.sh
+# Generate fresh values with:  openssl rand -hex 24
+: "${DB_PASS:?set DB_PASS in the environment before running}"
+: "${NEXTAUTH_SECRET:?set NEXTAUTH_SECRET in the environment before running}"
+: "${ADMIN_SECRET_KEY:?set ADMIN_SECRET_KEY in the environment before running}"
 APP_DIR='/var/www/visitagadir'
 DOMAIN='visitagadir.info'
 
