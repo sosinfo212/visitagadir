@@ -140,7 +140,7 @@ async function main() {
     gallery,
     logo,
     openingHours: JSON.stringify(GOOGLE_LISTING.openingHours),
-    canonicalUrl: GOOGLE_LISTING.googleMapsUrl,
+    canonicalUrl: null, // self-canonical to /listing/<slug>, not the Google Maps URL
     seoTitle: `${GOOGLE_LISTING.name} — Restaurant Marina Agadir`,
     metaDescription:
       'Restaurant gastronomique à la Marina d\'Agadir : poissons frais, viandes, terrasse vue mer. Réservation +212 528 84 01 20.',

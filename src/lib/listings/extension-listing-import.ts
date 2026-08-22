@@ -101,7 +101,10 @@ export async function importListingFromExtension(
       ? [split.image, ...(split.gallery ? JSON.parse(split.gallery) : [])]
       : input.images,
     logo: logo ?? input.logo ?? null,
-    canonicalUrl: input.googleMapsUrl ?? input.canonicalUrl ?? null,
+    // Never canonicalise a listing to its Google Maps / source URL — that made
+    // the page non-indexable ("canonicalised" to google.com). Leave null so the
+    // listing page self-canonicalises to /listing/<slug>.
+    canonicalUrl: null,
     published: input.published !== false,
   })
 

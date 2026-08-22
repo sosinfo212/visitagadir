@@ -240,7 +240,7 @@ export async function importWordPressListings(
           listing.meta.get('_job_tagline')?.trim() ||
           null,
         metaKeywords: listing.meta.get('_aioseo_keywords')?.trim() || null,
-        canonicalUrl: listing.link?.trim() || null,
+        canonicalUrl: null, // self-canonical to /listing/<slug>, not the old WP /job/ URL
         schemaType,
       }
 

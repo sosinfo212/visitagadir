@@ -187,7 +187,7 @@ export async function importWordPressExport(
         seoTitle: post.meta.get('_aioseo_title')?.trim() || null,
         metaDescription: post.meta.get('_aioseo_description')?.trim() || excerpt,
         primaryKeywords: post.meta.get('_aioseo_keywords')?.trim() || null,
-        canonicalUrl: post.link?.trim() || null,
+        canonicalUrl: null, // self-canonical to /blog/<slug>, not the old WP permalink
       }
 
       if (existing) {
