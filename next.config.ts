@@ -38,11 +38,21 @@ const nextConfig: NextConfig = {
       'sport': 'beaches-water-sports',
     }
 
+    // Specific legacy listings that were re-slugged (old slug → current slug).
+    const RESLUGGED_LISTINGS: Record<string, string> = {
+      'akdital-agadir-hopital-international-dagadir': 'akdital-agadir-international-hospital-of-agadir',
+    }
+
     try {
       const { PrismaClient } = await import('@prisma/client')
       const db = new PrismaClient()
-      const posts = await db.blogPost.findMany({ select: { slug: true } })
+      const [posts, listings] = await Promise.all([
+        db.blogPost.findMany({ select: { slug: true } }),
+        db.listing.findMany({ where: { published: true }, select: { slug: true } }),
+      ])
       await db.$disconnect()
+
+      const blogSlugs = new Set(posts.map((p) => p.slug))
 
       const redirects = [
         // Legacy blog permalinks lived at the site root (/<slug>); now under /blog/.
@@ -53,6 +63,25 @@ const nextConfig: NextConfig = {
             destination: `/blog/${p.slug}`,
             statusCode: 301,
           })),
+        // Legacy listing permalinks also lived at the site root; now under /listing/.
+        // (Blog takes precedence for any shared slug.)
+        ...listings
+          .filter((l) => !RESERVED.has(l.slug) && !blogSlugs.has(l.slug))
+          .map((l) => ({
+            source: `/${l.slug}`,
+            destination: `/listing/${l.slug}`,
+            statusCode: 301,
+          })),
+        // Re-slugged listings (old /listing/<old> → /listing/<current>).
+        ...Object.entries(RESLUGGED_LISTINGS).map(([from, to]) => ({
+          source: `/listing/${from}`,
+          destination: `/listing/${to}`,
+          statusCode: 301,
+        })),
+        // Dead AFCON-2025 topical sub-pages that were never published as posts →
+        // consolidate to the main AFCON guide. Real AFCON posts already redirect
+        // to their own /blog/ page above (matched first).
+        { source: '/afcon-2025-:rest', destination: '/blog/afcon-2025-agadir-guide', statusCode: 301 },
         // WP used /job/ for business listings.
         { source: '/job/:slug*', destination: '/listing/:slug*', statusCode: 301 },
         // WP taxonomy pages we no longer have — send to the homepage.
