@@ -112,8 +112,16 @@ export async function getListingSeoBundle(slug: string) {
     ...buildReviewSchemas(listing.reviews, listing, seo.siteUrl),
   ]
 
+  // CTR-oriented title fallback: lead with the business name + city, then a
+  // hook matching how people search these listings — "reviews"/"avis", "menu",
+  // "hours", "contact" (GSC shows listings ranking for exactly these). A custom
+  // seoTitle always wins. Food places get a "Menu" hook; others get hours/contact.
+  const isFoodDrink = listing.category.slug === 'restaurants-cafes'
+  const titleHook = isFoodDrink ? 'Menu, Reviews & Contact' : 'Reviews, Hours & Contact'
+  const generatedTitle = `${listing.name}, ${listing.city} — ${titleHook}`
+
   const metadata = buildMetadata(seo, {
-    title: listing.seoTitle || `${listing.name} — ${listing.category.name} in ${listing.city}`,
+    title: listing.seoTitle || generatedTitle,
     description: listing.metaDescription || listing.description.slice(0, 160),
     keywords: listing.metaKeywords,
     image: images[0],
