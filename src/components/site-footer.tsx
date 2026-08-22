@@ -124,7 +124,7 @@ export function SiteFooter({
           <p>&copy; {new Date().getFullYear()} {footerBranding.siteName}. All rights reserved.</p>
           <div className="flex items-center gap-4">
             <p>Made with ❤️ in Agadir, Morocco</p>
-            <Link href="/admin/login" className="text-gray-500 hover:text-gray-300 transition-colors text-xs">
+            <Link href="/admin/login" rel="nofollow" className="text-gray-500 hover:text-gray-300 transition-colors text-xs">
               Admin
             </Link>
           </div>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { isAuthenticated } from '@/lib/admin-auth'
 import { getSeoSettings, saveSeoSettings, SeoValidationError } from '@/lib/seo/service'
+import { revalidateSiteWide } from '@/lib/revalidate'
 
 const TEXT_FIELDS = [
   'siteName',
@@ -60,6 +61,7 @@ export async function PUT(request: NextRequest) {
 
   try {
     const updated = await saveSeoSettings(patch)
+    revalidateSiteWide()
     return NextResponse.json(updated)
   } catch (e) {
     if (e instanceof SeoValidationError) {

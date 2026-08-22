@@ -38,3 +38,16 @@ export function revalidateCategory(slug?: string | null) {
   if (slug) safe(`/category/${slug}`)
   safe('/sitemap.xml')
 }
+
+/**
+ * Site-wide settings changed (SEO defaults, schema, branding/logo, social):
+ * these feed every page's <head>/JSON-LD, so revalidate the whole tree. Called
+ * from admin settings routes so edits publish without a manual rebuild.
+ */
+export function revalidateSiteWide() {
+  try {
+    revalidatePath('/', 'layout')
+  } catch {
+    /* best-effort */
+  }
+}

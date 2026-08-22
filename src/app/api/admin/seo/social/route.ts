@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { isAuthenticated } from '@/lib/admin-auth'
 import { getSchemaSettings, updateSchemaSettings } from '@/lib/seo/repository'
 import { parseSocialProfiles, type SocialProfile, type SocialPlatform } from '@/lib/seo/types'
+import { revalidateSiteWide } from '@/lib/revalidate'
 
 /**
  * Read/write the social-profile list as a typed array. We persist it as
@@ -50,5 +51,6 @@ export async function PUT(request: NextRequest) {
   }
 
   await updateSchemaSettings({ socialProfiles: JSON.stringify(cleaned) })
+  revalidateSiteWide()
   return NextResponse.json({ profiles: cleaned })
 }

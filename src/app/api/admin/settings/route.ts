@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { isAuthenticated } from '@/lib/admin-auth'
 import { getAppSettings, toAdminSettings, updateAppSettings } from '@/lib/app-settings'
+import { revalidateSiteWide } from '@/lib/revalidate'
 
 export async function GET() {
   try {
@@ -40,6 +41,7 @@ export async function PUT(request: NextRequest) {
       newPassword: body.newPassword,
     })
 
+    revalidateSiteWide()
     return NextResponse.json(toAdminSettings(updated))
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to save settings'

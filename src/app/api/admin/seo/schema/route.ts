@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { isAuthenticated } from '@/lib/admin-auth'
 import { getSchemaSettings, saveSchemaSettings, SeoValidationError } from '@/lib/seo/service'
+import { revalidateSiteWide } from '@/lib/revalidate'
 import { SCHEMA_TYPE_CATALOG } from '@/lib/seo/types'
 
 /**
@@ -61,6 +62,7 @@ export async function PUT(request: NextRequest) {
 
   try {
     const updated = await saveSchemaSettings(patch)
+    revalidateSiteWide()
     return NextResponse.json(updated)
   } catch (e) {
     if (e instanceof SeoValidationError) {
