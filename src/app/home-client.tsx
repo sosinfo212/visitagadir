@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Search, MapPin, Star, Phone, Globe, Mail, ChevronRight, ChevronLeft,
@@ -364,7 +364,6 @@ export default function Home({
   initialData?: HomepageInitialData
 }) {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [categories, setCategories] = useState<CategoryWithCount[]>(initialData?.categories ?? [])
   const [listings, setListings] = useState<Listing[]>([])
   const [featuredListings, setFeaturedListings] = useState<Listing[]>(initialData?.featuredListings ?? [])
@@ -591,7 +590,14 @@ export default function Home({
 
   const activeCategoryData = useMemo(() => categories.find(c => c.slug === activeCategory), [categories, activeCategory])
 
-  const urlSearch = searchParams.get('search')?.trim() ?? ''
+  // Read ?search= client-side (window.location) instead of useSearchParams():
+  // useSearchParams() forces this statically-prerendered route to bail the whole
+  // subtree to client-side rendering, so the ISR HTML would contain only a
+  // "Loading…" shell. Reading location in an effect keeps the content server-rendered.
+  const [urlSearch, setUrlSearch] = useState('')
+  useEffect(() => {
+    setUrlSearch(new URLSearchParams(window.location.search).get('search')?.trim() ?? '')
+  }, [])
 
   useEffect(() => {
     if (!urlSearch) return
