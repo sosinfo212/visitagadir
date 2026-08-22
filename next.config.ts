@@ -43,6 +43,20 @@ const nextConfig: NextConfig = {
       'akdital-agadir-hopital-international-dagadir': 'akdital-agadir-international-hospital-of-agadir',
     }
 
+    // Tier C consolidation: duplicate blog posts merged into a pillar. The dup
+    // is unpublished; this 301s its old URL to the pillar so equity consolidates.
+    const BLOG_CONSOLIDATION: Record<string, string> = {
+      'best-restaurants-in-agadir-2': 'best-restaurants-in-agadir',
+      'best-agadir-restaurants-for-every-mood': 'best-restaurants-in-agadir',
+      'savoring-agadir-a-culinary-journey-through-traditional-moroccan-cuisine': 'best-restaurants-in-agadir',
+      'savoring-the-best-of-agadir-a-guide-to-the-citys-finest-restaurant-lounges': 'best-restaurants-in-agadir',
+      'best-agadir-surf-spots-for-beginners': 'the-ultimate-guide-to-agadirs-best-surf-spots-for-beginners',
+      'riding-the-waves-in-agadir-a-guide-to-the-best-surfing-spots': 'the-ultimate-guide-to-agadirs-best-surf-spots-for-beginners',
+      'agadir-beach-clubs-guide': 'agadir-beach-clubs-review-where-to-go',
+      'exploring-the-lush-greens-agadirs-top-golf-courses': 'agadir-golf-courses',
+      'places-to-work-agadir': 'best-cafes-for-remote-work-in-agadir',
+    }
+
     try {
       const { PrismaClient } = await import('@prisma/client')
       const db = new PrismaClient()
@@ -76,6 +90,12 @@ const nextConfig: NextConfig = {
         ...Object.entries(RESLUGGED_LISTINGS).map(([from, to]) => ({
           source: `/listing/${from}`,
           destination: `/listing/${to}`,
+          statusCode: 301,
+        })),
+        // Consolidated duplicate blog posts → their pillar.
+        ...Object.entries(BLOG_CONSOLIDATION).map(([from, to]) => ({
+          source: `/blog/${from}`,
+          destination: `/blog/${to}`,
           statusCode: 301,
         })),
         // Dead AFCON-2025 topical sub-pages that were never published as posts →
