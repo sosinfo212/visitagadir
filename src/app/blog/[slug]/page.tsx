@@ -26,6 +26,11 @@ interface PageProps {
 // ISR: cache published post HTML for 1h; revalidatePath on publish/edit.
 export const revalidate = 3600
 
+// On-demand ISR: cache each post after first render, revalidate hourly.
+export async function generateStaticParams() {
+  return []
+}
+
 const LISTINGS_HEADING: Record<string, string> = {
   'travel-guides': 'Tours & excursions',
   'beaches-nature': 'Beaches & outdoor spots',

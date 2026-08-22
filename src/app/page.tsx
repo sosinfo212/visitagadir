@@ -7,15 +7,16 @@ import { getHomepageInitialData } from '@/lib/homepage-data'
 import { getSeoSettings } from '@/lib/seo/repository'
 import { buildMetadata } from '@/lib/seo/metadata'
 
-interface PageProps {
-  searchParams: Promise<{ search?: string; listBusiness?: string }>
-}
+// ISR: prerender the homepage and refresh hourly. Reading `searchParams` here
+// (previously used to noindex ?search / ?listBusiness) forced the whole route
+// dynamic (no-store) on every request; the self-referential canonical to "/"
+// already prevents query-string variants from being indexed, so the noindex
+// is unnecessary and the page can be statically cached.
+export const revalidate = 3600
 
-export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
-  const params = await searchParams
+export async function generateMetadata(): Promise<Metadata> {
   const seo = await getSeoSettings()
-  const noindex = Boolean(params.search?.trim()) || params.listBusiness === '1'
-  return buildMetadata(seo, { path: '/', noindex })
+  return buildMetadata(seo, { path: '/' })
 }
 
 export default async function HomePage() {

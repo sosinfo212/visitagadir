@@ -17,6 +17,13 @@ interface PageProps {
 // hit. Admin edits should call revalidatePath('/listing/<slug>') to publish.
 export const revalidate = 3600
 
+// Opt the dynamic segment into ISR without prerendering all listings at build
+// (1000+ rows would blow up build time/memory). Returning [] means pages are
+// rendered on-demand on first request, then cached and revalidated hourly.
+export async function generateStaticParams() {
+  return []
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
   const bundle = await getListingSeoBundle(slug)

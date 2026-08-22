@@ -32,6 +32,11 @@ interface PageProps {
 // ISR: serve cached HTML for 1h; revalidatePath on category/listing edits.
 export const revalidate = 3600
 
+// On-demand ISR: cache each category page after first render, revalidate hourly.
+export async function generateStaticParams() {
+  return []
+}
+
 async function loadCategory(slug: string) {
   return db.category.findUnique({ where: { slug } })
 }

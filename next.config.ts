@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  poweredByHeader: false, // drop the x-powered-by: Next.js fingerprint
   typescript: {
     ignoreBuildErrors: true,
   },
