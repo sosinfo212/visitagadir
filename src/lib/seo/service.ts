@@ -118,7 +118,11 @@ export async function getListingSeoBundle(slug: string) {
   // seoTitle always wins. Food places get a "Menu" hook; others get hours/contact.
   const isFoodDrink = listing.category.slug === 'restaurants-cafes'
   const titleHook = isFoodDrink ? 'Menu, Reviews & Contact' : 'Reviews, Hours & Contact'
-  const generatedTitle = `${listing.name}, ${listing.city} — ${titleHook}`
+  // Skip ", city" when the business name already contains it (avoids "…Agadir, Agadir").
+  const nameHasCity = listing.name.toLowerCase().includes(listing.city.toLowerCase())
+  const generatedTitle = nameHasCity
+    ? `${listing.name} — ${titleHook}`
+    : `${listing.name}, ${listing.city} — ${titleHook}`
 
   const metadata = buildMetadata(seo, {
     title: listing.seoTitle || generatedTitle,
