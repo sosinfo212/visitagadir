@@ -113,6 +113,11 @@ const nextConfig: NextConfig = {
           destination: `/category/${to}`,
           statusCode: 301,
         })),
+        // Catch-all: any other old /listing-category/* slug we didn't map has no
+        // current equivalent — 301 to the homepage instead of 404ing (matches
+        // the /region/* treatment). Listed AFTER the specific maps above so the
+        // mapped slugs win (Next.js matches redirects in array order).
+        { source: '/listing-category/:slug*', destination: '/', statusCode: 301 },
       ]
       return redirects
     } catch {

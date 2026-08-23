@@ -38,6 +38,10 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
     description: category.description || `Articles about ${category.name.toLowerCase()} in Agadir.`,
     path: buildBlogListUrl(blogCategoryPath(category.slug), page),
     ogType: 'website',
+    // Blog-category archives are thin nav pages — 19 of them, all with ~0
+    // impressions/0 clicks, and they cannibalize each other. noindex,follow
+    // removes the index bloat while keeping them crawlable for discovery.
+    robots: 'noindex, follow',
   })
 }
 

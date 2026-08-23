@@ -23,6 +23,7 @@ import {
   deleteRedirect,
 } from './repository'
 import { buildMetadata, type PageMetaInput } from './metadata'
+import { buildListingDescription } from './listing-description'
 import {
   buildWebSiteSchema,
   buildOrganizationSchema,
@@ -97,6 +98,12 @@ export async function getListingSeoBundle(slug: string) {
     sameCity: sameCityRaw,
     nearby: nearbyRaw,
   })
+
+  // Thin-content fallback: synthesise a real description from structured fields
+  // when the listing's own is empty/one-line. Assigning back to listing.description
+  // fixes the on-page body, the meta description, and the LocalBusiness schema in
+  // one place (all three read listing.description downstream).
+  listing.description = buildListingDescription(listing)
 
   const images = getListingDisplayImages(listing.image, listing.gallery)
   const breadcrumbs = [
