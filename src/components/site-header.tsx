@@ -23,6 +23,11 @@ import { AddBusinessModal, type CategoryWithCount } from '@/components/add-busin
 import { OptimizedImage } from '@/components/optimized-image'
 import type { AppSettingsPublic } from '@/lib/app-settings'
 
+// motion(Link) → renders a crawlable <a href> AND animates. Header nav must be
+// real anchors (not <button onClick>) so Google sees the internal links +
+// anchor text — a prerequisite for sitelinks.
+const MotionLink = motion(Link)
+
 const businessLoginUrl = '/login?callbackUrl=%2Fmy-listings'
 
 function headerBrandingFromSettings(branding?: AppSettingsPublic | null) {
@@ -137,17 +142,6 @@ function SiteHeaderInner({
     }
   }, [session, status, pathname])
 
-  const goHome = () => {
-    setMobileMenuOpen(false)
-    router.push('/')
-  }
-
-  const goCategory = (slug: string) => {
-    setMobileMenuOpen(false)
-    setDesktopDropdownOpen(false)
-    router.push(categoryPath(slug))
-  }
-
   const handleSearch = () => {
     const q = searchQuery.trim()
     setMobileMenuOpen(false)
@@ -163,8 +157,8 @@ function SiteHeaderInner({
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 gap-2">
-            <button
-              onClick={goHome}
+            <Link
+              href="/"
               aria-label={`Go to ${siteBranding.siteName} homepage`}
               className="flex items-center gap-2 hover:opacity-80 transition-opacity shrink-0"
             >
@@ -180,16 +174,16 @@ function SiteHeaderInner({
                 }}
                 priority
               />
-            </button>
+            </Link>
 
             <div className="hidden md:flex items-center gap-1 flex-1 max-w-2xl mx-4">
-              <button
-                onClick={goHome}
+              <Link
+                href="/"
                 className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg hover:bg-muted transition-colors text-foreground"
               >
                 <HomeIcon className="h-4 w-4" />
                 <span>Home</span>
-              </button>
+              </Link>
 
               <div className="w-px h-6 bg-border mx-1" />
 
@@ -232,9 +226,10 @@ function SiteHeaderInner({
                       </div>
                       <div className="p-1.5 max-h-[65vh] overflow-y-auto">
                         {categories.map((cat) => (
-                          <button
+                          <Link
                             key={cat.id}
-                            onClick={() => goCategory(cat.slug)}
+                            href={categoryPath(cat.slug)}
+                            onClick={() => setDesktopDropdownOpen(false)}
                             className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-left transition-colors ${
                               activeCategorySlug === cat.slug
                                 ? 'bg-gradient-to-r from-orange-50 to-teal-50 text-orange-700 font-medium'
@@ -246,7 +241,7 @@ function SiteHeaderInner({
                             <span className="text-xs text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded-full">
                               {cat.listingCount}
                             </span>
-                          </button>
+                          </Link>
                         ))}
                       </div>
                     </motion.div>
@@ -374,13 +369,14 @@ function SiteHeaderInner({
               className="md:hidden border-t overflow-hidden bg-white"
             >
               <div className="max-w-7xl mx-auto px-4 py-4">
-                <button
-                  onClick={goHome}
+                <Link
+                  href="/"
+                  onClick={() => setMobileMenuOpen(false)}
                   className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold text-left transition-all bg-gradient-to-r from-orange-50 to-teal-50 border border-orange-200 mb-3 w-full"
                 >
                   <HomeIcon className="h-4 w-4 text-orange-600" />
                   <span className="text-orange-700">Home</span>
-                </button>
+                </Link>
 
                 {session?.user ? (
                   <Link
@@ -410,12 +406,13 @@ function SiteHeaderInner({
 
                 <div className="grid grid-cols-2 gap-1.5">
                   {categories.map((cat, i) => (
-                    <motion.button
+                    <MotionLink
                       key={cat.id}
+                      href={categoryPath(cat.slug)}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.03 }}
-                      onClick={() => goCategory(cat.slug)}
+                      onClick={() => setMobileMenuOpen(false)}
                       className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-left transition-all border ${
                         activeCategorySlug === cat.slug
                           ? 'bg-gradient-to-r from-orange-50 to-teal-50 border-orange-200'
@@ -424,7 +421,7 @@ function SiteHeaderInner({
                     >
                       <span className="text-muted-foreground">{getCategoryIcon(cat.icon)}</span>
                       <span className="font-medium truncate text-xs">{cat.name}</span>
-                    </motion.button>
+                    </MotionLink>
                   ))}
                 </div>
                 <Button

@@ -24,7 +24,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <h1 className="sr-only">Agadir Directory — Your Complete Guide to Agadir, Morocco</h1>
+      <h1 className="sr-only">Visit Agadir — Your Complete Guide to Agadir, Morocco</h1>
       <Suspense fallback={<div className="min-h-[50vh] flex items-center justify-center text-muted-foreground">Loading...</div>}>
         <Home initialData={initialData} />
       </Suspense>

@@ -34,6 +34,7 @@ export function buildWebSiteSchema(
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: seo.siteName,
+    alternateName: 'Agadir Directory',
     url: seo.siteUrl,
   }
   if (schemaCfg.searchUrlPattern) {
@@ -60,6 +61,7 @@ export function buildOrganizationSchema(
     '@context': 'https://schema.org',
     '@type': safeSchemaType(schemaCfg.organizationType, 'Organization'),
     name: schemaCfg.organizationName,
+    alternateName: 'Agadir Directory',
     url: schemaCfg.websiteUrl || seo.siteUrl,
   }
   if (schemaCfg.logoUrl) node.logo = ensureAbsolute(schemaCfg.logoUrl, seo.siteUrl)
