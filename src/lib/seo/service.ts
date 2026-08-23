@@ -79,9 +79,8 @@ export async function getListingSeoBundle(slug: string) {
   })
   if (!listing || !listing.published) return null
 
-  const [seo, schemaCfg, relatedRaw, sameCityRaw, nearbyRaw] = await Promise.all([
+  const [seo, relatedRaw, sameCityRaw, nearbyRaw] = await Promise.all([
     getSeoSettings(),
-    getSchemaSettings(),
     getRelatedInCategory({ categoryId: listing.categoryId, excludeListingId: listing.id, limit: 6 }),
     getSameCity({ city: listing.city, excludeListingId: listing.id, limit: 6 }),
     getNearby({
@@ -112,8 +111,8 @@ export async function getListingSeoBundle(slug: string) {
     { name: listing.name },
   ]
 
+  // Organization + WebSite are emitted site-wide in the root layout.
   const schemas = [
-    buildOrganizationSchema(seo, schemaCfg),
     buildBreadcrumbSchema(breadcrumbs),
     buildLocalBusinessSchema({ listing, images, siteUrl: seo.siteUrl }),
     ...buildReviewSchemas(listing.reviews, listing, seo.siteUrl),
@@ -196,9 +195,8 @@ export async function getCitySeoBundle(citySlugParam: string) {
   const match = cities.find(c => citySlug(c.city) === citySlugParam)
   if (!match) return null
 
-  const [seo, schemaCfg, listings, categories] = await Promise.all([
+  const [seo, listings, categories] = await Promise.all([
     getSeoSettings(),
-    getSchemaSettings(),
     getListingsInCity(match.city, 60),
     getAllCategories(12),
   ])
@@ -208,8 +206,8 @@ export async function getCitySeoBundle(citySlugParam: string) {
     { name: match.city },
   ]
 
+  // Organization + WebSite are emitted site-wide in the root layout.
   const schemas = [
-    buildOrganizationSchema(seo, schemaCfg),
     buildBreadcrumbSchema(breadcrumbs),
     buildCityCollectionPageSchema({ city: match.city, listings, siteUrl: seo.siteUrl }),
   ]

@@ -5,8 +5,7 @@ import { Calendar, Clock, User } from 'lucide-react'
 import { db } from '@/lib/db'
 import { getSeoSettings } from '@/lib/seo/repository'
 import { buildMetadata } from '@/lib/seo/metadata'
-import { buildBlogPostingSchema, buildBreadcrumbSchema, buildOrganizationSchema } from '@/lib/seo/schema'
-import { getSchemaSettings } from '@/lib/seo/repository'
+import { buildBlogPostingSchema, buildBreadcrumbSchema } from '@/lib/seo/schema'
 import { blogCategoryPath, blogPath, blogPostPath } from '@/lib/seo/url'
 import { SchemaScript } from '@/components/seo/schema-script'
 import { BreadcrumbNav } from '@/components/seo/breadcrumb-nav'
@@ -73,9 +72,8 @@ export default async function BlogPostPage({ params }: PageProps) {
   const post = await loadPost(slug)
   if (!post) notFound()
 
-  const [seo, schemaCfg, relatedPosts, listings] = await Promise.all([
+  const [seo, relatedPosts, listings] = await Promise.all([
     getSeoSettings(),
-    getSchemaSettings(),
     getRelatedBlogPosts({ postId: post.id, categoryId: post.categoryId, limit: 4 }),
     getBlogSidebarListings(post.category?.slug, 4),
   ])
@@ -94,8 +92,8 @@ export default async function BlogPostPage({ params }: PageProps) {
     { name: post.title },
   ]
 
+  // Organization + WebSite are emitted site-wide in the root layout.
   const schemas = [
-    buildOrganizationSchema(seo, schemaCfg),
     buildBreadcrumbSchema(breadcrumbs),
     buildBlogPostingSchema({ post, siteUrl: seo.siteUrl }),
   ]

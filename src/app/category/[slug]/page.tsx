@@ -12,12 +12,11 @@ import type { Metadata } from 'next'
 
 import { db } from '@/lib/db'
 import { getListingDisplayImages } from '@/lib/listing-images'
-import { getSeoSettings, getSchemaSettings } from '@/lib/seo/repository'
+import { getSeoSettings } from '@/lib/seo/repository'
 import { buildMetadata } from '@/lib/seo/metadata'
 import {
   buildCollectionPageSchema,
   buildBreadcrumbSchema,
-  buildOrganizationSchema,
 } from '@/lib/seo/schema'
 import { categoryPath, listingPath } from '@/lib/seo/url'
 import { getRelatedCategories, getListingsInCategory } from '@/lib/seo/internal-linking'
@@ -62,9 +61,8 @@ export default async function CategoryPage({ params }: PageProps) {
   const cat = await loadCategory(slug)
   if (!cat) notFound()
 
-  const [seo, schemaCfg, listings, related] = await Promise.all([
+  const [seo, listings, related] = await Promise.all([
     getSeoSettings(),
-    getSchemaSettings(),
     getListingsInCategory(slug, 60),
     getRelatedCategories(slug, 8),
   ])
@@ -109,8 +107,9 @@ export default async function CategoryPage({ params }: PageProps) {
     { name: cat.name },
   ]
 
+  // Organization + WebSite are emitted once site-wide in the root layout —
+  // don't repeat them here (avoids a duplicate Organization node per page).
   const schemas = [
-    buildOrganizationSchema(seo, schemaCfg),
     buildBreadcrumbSchema(breadcrumbs),
     buildCollectionPageSchema({ category: cat, listings, siteUrl: seo.siteUrl }),
   ]
