@@ -92,9 +92,9 @@ export default function ContactPage() {
           className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4"
         >
           {[
-            { icon: MapPin, title: 'Visit Us', info: 'Boulevard Hassan II, Agadir 80000, Morocco', color: 'from-orange-500 to-red-500' },
-            { icon: Phone, title: 'Call Us', info: '+212 528 000 000', color: 'from-teal-500 to-cyan-500' },
-            { icon: Mail, title: 'Email Us', info: 'info@agadirdirectory.com', color: 'from-purple-500 to-indigo-500' },
+            { icon: MapPin, title: 'Visit Us', info: 'Agadir, Morocco', color: 'from-orange-500 to-red-500' },
+            { icon: Phone, title: 'Call Us', info: '+212 619-267125', color: 'from-teal-500 to-cyan-500' },
+            { icon: Mail, title: 'Email Us', info: 'contact@visitagadir.info', color: 'from-purple-500 to-indigo-500' },
             { icon: Clock, title: 'Working Hours', info: 'Mon-Fri: 9AM-6PM, Sat: 10AM-2PM', color: 'from-amber-500 to-orange-500' },
           ].map((item, i) => (
             <motion.div key={item.title} variants={fadeInUp}>
@@ -237,7 +237,7 @@ export default function ContactPage() {
                   {[
                     { q: 'How do I list my business?', a: 'Click the "Add Your Business" button on the homepage and fill out the submission form. Our team will review your listing within 24-48 hours.' },
                     { q: 'Is listing my business free?', a: 'Yes, basic listings are completely free. We also offer premium featured listings for enhanced visibility. Visit our Advertise page for more details.' },
-                    { q: 'How can I update my listing?', a: 'Contact us via this form or email us at info@agadirdirectory.com with the changes you would like to make to your listing.' },
+                    { q: 'How can I update my listing?', a: 'Contact us via this form or email us at contact@visitagadir.info with the changes you would like to make to your listing.' },
                     { q: 'Can I leave a review?', a: 'Absolutely! Navigate to any business listing and use the review form at the bottom of the page to share your experience with the community.' },
                   ].map((faq, i) => (
                     <div key={i} className="border-b last:border-0 pb-4 last:pb-0">
@@ -254,7 +254,7 @@ export default function ContactPage() {
                 <Building2 className="h-8 w-8 mb-3 opacity-90" />
                 <h3 className="font-bold text-lg mb-2">Business Inquiries</h3>
                 <p className="text-white/90 text-sm leading-relaxed">
-                  Interested in advertising or partnering with Agadir Directory? We offer customized solutions for businesses of all sizes.
+                  Interested in advertising or partnering with Visit Agadir? We offer customized solutions for businesses of all sizes.
                 </p>
                 <Link href="/advertise">
                   <Button className="mt-4 bg-white text-orange-600 hover:bg-white/90 font-semibold rounded-xl">

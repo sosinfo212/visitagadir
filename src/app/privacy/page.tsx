@@ -94,7 +94,7 @@ export default function PrivacyPage() {
                 Introduction
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-3">
-                Agadir Directory (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) respects your privacy and is committed to protecting your personal data. This privacy policy explains how we collect, use, disclose, and safeguard your information when you visit our website agadirdirectory.com (the &quot;Service&quot;). Please read this privacy policy carefully. If you do not agree with the terms of this privacy policy, please do not access the Service.
+                Visit Agadir (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) respects your privacy and is committed to protecting your personal data. This privacy policy explains how we collect, use, disclose, and safeguard your information when you visit our website visitagadir.info (the &quot;Service&quot;). Please read this privacy policy carefully. If you do not agree with the terms of this privacy policy, please do not access the Service.
               </p>
               <p className="text-muted-foreground leading-relaxed">
                 By using our Service, you consent to the collection and use of information in accordance with this policy. We will not use or share your information with anyone except as described in this privacy policy. We reserve the right to update this privacy policy at any time, and changes will be effective immediately upon posting on this page. We encourage you to review this privacy policy periodically for any changes.
@@ -218,7 +218,7 @@ export default function PrivacyPage() {
                 <li className="flex items-start gap-2"><span className="text-orange-500 mt-1.5">&#8226;</span><span><strong className="text-foreground">Data Portability:</strong> You have the right to request your personal data in a structured, commonly used, machine-readable format.</span></li>
               </ul>
               <p className="text-muted-foreground leading-relaxed mt-4">
-                To exercise any of these rights, please contact us at privacy@agadirdirectory.com. We will respond to your request within 30 days.
+                To exercise any of these rights, please contact us at contact@visitagadir.info. We will respond to your request within 30 days.
               </p>
             </div>
 
@@ -234,10 +234,10 @@ export default function PrivacyPage() {
               </p>
               <Card className="border shadow-none">
                 <CardContent className="p-6 space-y-2 text-muted-foreground">
-                  <p><strong className="text-foreground">Agadir Directory</strong></p>
-                  <p>Email: privacy@agadirdirectory.com</p>
-                  <p>Address: Boulevard Hassan II, Agadir 80000, Morocco</p>
-                  <p>Phone: +212 528 000 000</p>
+                  <p><strong className="text-foreground">Visit Agadir</strong></p>
+                  <p>Email: contact@visitagadir.info</p>
+                  <p>Address: Agadir, Morocco</p>
+                  <p>Phone: +212 619-267125</p>
                 </CardContent>
               </Card>
             </div>

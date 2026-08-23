@@ -93,7 +93,7 @@ export default function TermsPage() {
                 Acceptance of Terms
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-3">
-                Welcome to Agadir Directory. By accessing or using our website at agadirdirectory.com (the &quot;Service&quot;), you agree to be bound by these Terms of Service (&quot;Terms&quot;). If you do not agree to these Terms, you may not access or use the Service. These Terms apply to all visitors, users, and others who access or use the Service.
+                Welcome to Visit Agadir. By accessing or using our website at visitagadir.info (the &quot;Service&quot;), you agree to be bound by these Terms of Service (&quot;Terms&quot;). If you do not agree to these Terms, you may not access or use the Service. These Terms apply to all visitors, users, and others who access or use the Service.
               </p>
               <p className="text-muted-foreground leading-relaxed">
                 We reserve the right to modify or replace these Terms at any time at our sole discretion. If a revision is material, we will try to provide at least 30 days&apos; notice prior to any new terms taking effect. What constitutes a material change will be determined at our sole discretion. By continuing to access or use our Service after those revisions become effective, you agree to be bound by the revised terms.
@@ -170,10 +170,10 @@ export default function TermsPage() {
                 Intellectual Property
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-3">
-                The Service and its original content (excluding content provided by users), features, and functionality are and will remain the exclusive property of Agadir Directory and its licensors. The Service is protected by copyright, trademark, and other laws of both Morocco and foreign countries. Our trademarks and trade dress may not be used in connection with any product or service without the prior written consent of Agadir Directory.
+                The Service and its original content (excluding content provided by users), features, and functionality are and will remain the exclusive property of Visit Agadir and its licensors. The Service is protected by copyright, trademark, and other laws of both Morocco and foreign countries. Our trademarks and trade dress may not be used in connection with any product or service without the prior written consent of Visit Agadir.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                By submitting content (including business listings, reviews, and images) to the Service, you grant Agadir Directory a non-exclusive, worldwide, royalty-free, irrevocable, perpetual license to use, reproduce, modify, publish, translate, distribute, and display such content in connection with the Service. You retain all ownership rights to your content, but you grant us the right to use it as described above.
+                By submitting content (including business listings, reviews, and images) to the Service, you grant Visit Agadir a non-exclusive, worldwide, royalty-free, irrevocable, perpetual license to use, reproduce, modify, publish, translate, distribute, and display such content in connection with the Service. You retain all ownership rights to your content, but you grant us the right to use it as described above.
               </p>
             </div>
 
@@ -203,7 +203,7 @@ export default function TermsPage() {
                 IN NO EVENT SHALL AGADIR DIRECTORY, NOR ITS DIRECTORS, EMPLOYEES, PARTNERS, AGENTS, SUPPLIERS, OR AFFILIATES, BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING WITHOUT LIMITATION, LOSS OF PROFITS, DATA, USE, GOODWILL, OR OTHER INTANGIBLE LOSSES, RESULTING FROM (A) YOUR ACCESS TO OR USE OF OR INABILITY TO ACCESS OR USE THE SERVICE; (B) ANY CONDUCT OR CONTENT OF ANY THIRD PARTY ON THE SERVICE; (C) ANY CONTENT OBTAINED FROM THE SERVICE; OR (D) UNAUTHORIZED ACCESS, USE, OR ALTERATION OF YOUR TRANSMISSIONS OR CONTENT.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                This limitation of liability applies whether the alleged liability is based on contract, tort, negligence, strict liability, or any other basis, even if Agadir Directory has been advised of the possibility of such damage. In jurisdictions that do not allow the exclusion or limitation of liability for consequential or incidental damages, our liability shall be limited to the maximum extent permitted by law.
+                This limitation of liability applies whether the alleged liability is based on contract, tort, negligence, strict liability, or any other basis, even if Visit Agadir has been advised of the possibility of such damage. In jurisdictions that do not allow the exclusion or limitation of liability for consequential or incidental damages, our liability shall be limited to the maximum extent permitted by law.
               </p>
             </div>
 
@@ -234,10 +234,10 @@ export default function TermsPage() {
               </p>
               <Card className="border shadow-none">
                 <CardContent className="p-6 space-y-2 text-muted-foreground">
-                  <p><strong className="text-foreground">Agadir Directory</strong></p>
-                  <p>Email: legal@agadirdirectory.com</p>
-                  <p>Address: Boulevard Hassan II, Agadir 80000, Morocco</p>
-                  <p>Phone: +212 528 000 000</p>
+                  <p><strong className="text-foreground">Visit Agadir</strong></p>
+                  <p>Email: contact@visitagadir.info</p>
+                  <p>Address: Agadir, Morocco</p>
+                  <p>Phone: +212 619-267125</p>
                 </CardContent>
               </Card>
             </div>
