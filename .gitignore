@@ -57,3 +57,5 @@ server.log
 # Local WordPress import dumps (not application source)
 visitagadir*.xml
 *.WordPress.*.xml
+# Private session handoff (contains credentials)
+docs/SESSION-HANDOFF.md
