@@ -131,9 +131,17 @@ export async function getListingSeoBundle(slug: string) {
     ? `${listing.name} — ${titleHook}`
     : `${listing.name}, ${listing.city} — ${titleHook}`
 
+  // Prefer a custom metaDescription only when it's substantial — many imports
+  // set a one-liner (e.g. a 20-char tagline) that reads as thin content. Below
+  // the threshold, fall back to the (already thin-content-resolved) description.
+  // Strip any HTML + collapse whitespace so the meta tag stays clean.
+  const customMeta = listing.metaDescription?.trim() ?? ''
+  const metaSource = customMeta.length >= 50 ? customMeta : listing.description
+  const metaDescription = metaSource.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200)
+
   const metadata = buildMetadata(seo, {
     title: listing.seoTitle || generatedTitle,
-    description: listing.metaDescription || listing.description.slice(0, 160),
+    description: metaDescription,
     keywords: listing.metaKeywords,
     image: images[0],
     path: listingPath(listing.slug),
