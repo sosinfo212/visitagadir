@@ -231,7 +231,6 @@ function AnimatedHeroSection({
           alt="Agadir, Morocco — beach and city skyline"
           fill
           priority
-          quality={62}
           sizes="100vw"
           className="object-cover object-center"
         />
