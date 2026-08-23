@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Separator } from '@/components/ui/separator'
-import { categoryPath } from '@/lib/seo/url'
+import { categoryPath, cityPath } from '@/lib/seo/url'
 import type { AppSettingsPublic } from '@/lib/app-settings'
+import type { NavCity } from '@/lib/nav-data'
 import { OptimizedImage } from '@/components/optimized-image'
 
 interface CategoryLink {
@@ -25,9 +26,11 @@ function footerBrandingFromSettings(branding?: AppSettingsPublic | null) {
 export function SiteFooter({
   branding,
   categories: initialCategories = [],
+  cities = [],
 }: {
   branding?: AppSettingsPublic | null
   categories?: CategoryLink[]
+  cities?: NavCity[]
 }) {
   const [categories, setCategories] = useState<CategoryLink[]>(initialCategories)
   const [footerBranding] = useState(() => footerBrandingFromSettings(branding))
@@ -118,6 +121,21 @@ export function SiteFooter({
             </ul>
           </div>
         </div>
+
+        {cities.length > 0 && (
+          <div className="mt-10">
+            <h2 className="font-semibold mb-3 text-sm">Popular cities</h2>
+            <ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-400">
+              {cities.map((c) => (
+                <li key={c.slug}>
+                  <Link href={cityPath(c.city)} className="hover:text-white transition-colors">
+                    {c.city}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <Separator className="my-8 bg-gray-800" />
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500">
