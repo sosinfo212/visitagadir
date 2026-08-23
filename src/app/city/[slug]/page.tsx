@@ -7,6 +7,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 
+import { db } from '@/lib/db'
 import { getCitySeoBundle } from '@/lib/seo/service'
 import { categoryPath, listingPath } from '@/lib/seo/url'
 import { SchemaScript } from '@/components/seo/schema-script'
@@ -32,6 +33,15 @@ export default async function CityPage({ params }: PageProps) {
   if (!bundle) notFound()
 
   const { city, count, listings, categories, breadcrumbs, schemas } = bundle
+
+  // Crawlable index of EVERY published listing in the city (slug+name only).
+  // The card grid above caps at 60; this full link list gives every listing an
+  // internal crawl path so deep listings get discovered. Keeps the page ISR.
+  const allLinks = await db.listing.findMany({
+    where: { city, published: true },
+    select: { slug: true, name: true },
+    orderBy: { name: 'asc' },
+  })
 
   return (
     <>
@@ -88,6 +98,23 @@ export default async function CityPage({ params }: PageProps) {
               </div>
             </aside>
           </div>
+
+          {allLinks.length > 12 && (
+            <section aria-labelledby="all-listings-heading" className="bg-white border rounded-xl p-5">
+              <h2 id="all-listings-heading" className="text-lg font-semibold text-gray-900 mb-3">
+                All businesses in {city} ({allLinks.length})
+              </h2>
+              <ul className="columns-2 sm:columns-3 lg:columns-4 gap-6 text-sm [&>li]:mb-1.5 [&>li]:break-inside-avoid">
+                {allLinks.map(l => (
+                  <li key={l.slug}>
+                    <Link href={listingPath(l.slug)} className="text-gray-600 hover:text-orange-600 hover:underline">
+                      {l.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
         </div>
       </main>
     </>

@@ -93,6 +93,17 @@ export default async function CategoryPage({ params }: PageProps) {
     images: getListingDisplayImages(l.image, l.gallery),
   }))
 
+  // Crawlable index of EVERY published listing in the category (lightweight
+  // slug+name only). The 60-card grid above caps the visual set; without this
+  // full link list, listings past #60 have no internal crawl path and go
+  // undiscovered ("URL is unknown to Google"). Keeps the page ISR (no
+  // searchParams / dynamic bailout).
+  const allLinks = await db.listing.findMany({
+    where: { categoryId: cat.id, published: true },
+    select: { slug: true, name: true },
+    orderBy: { name: 'asc' },
+  })
+
   const breadcrumbs = [
     { name: 'Home', url: seo.siteUrl },
     { name: cat.name },
@@ -182,6 +193,23 @@ export default async function CategoryPage({ params }: PageProps) {
               </div>
             </aside>
           </div>
+
+          {allLinks.length > 12 && (
+            <section aria-labelledby="all-listings-heading" className="bg-white border rounded-xl p-5">
+              <h2 id="all-listings-heading" className="text-lg font-semibold text-gray-900 mb-3">
+                All {cat.name} in Agadir ({allLinks.length})
+              </h2>
+              <ul className="columns-2 sm:columns-3 lg:columns-4 gap-6 text-sm [&>li]:mb-1.5 [&>li]:break-inside-avoid">
+                {allLinks.map(l => (
+                  <li key={l.slug}>
+                    <Link href={listingPath(l.slug)} className="text-gray-600 hover:text-orange-600 hover:underline">
+                      {l.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
         </div>
       </main>
     </>
