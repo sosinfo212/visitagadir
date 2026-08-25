@@ -10,7 +10,7 @@ import type { MetadataRoute } from 'next'
 import { db } from '@/lib/db'
 import { getSeoSettings } from '@/lib/seo/repository'
 import { getCitiesWithCounts } from '@/lib/seo/internal-linking'
-import { categoryPath, listingPath, cityPath, blogPostPath, blogCategoryPath, ensureAbsolute } from '@/lib/seo/url'
+import { categoryPath, listingPath, cityPath, blogPostPath, ensureAbsolute } from '@/lib/seo/url'
 
 export const revalidate = 3600
 
@@ -18,7 +18,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const seo = await getSeoSettings()
   const base = seo.siteUrl
 
-  const [categories, listings, cities, blogPosts, blogCategories] = await Promise.all([
+  // Blog-category archives are intentionally noindex,follow (thin nav pages) —
+  // so they are deliberately NOT listed here (a sitemap must not advertise
+  // noindexed URLs).
+  const [categories, listings, cities, blogPosts] = await Promise.all([
     db.category.findMany({ select: { slug: true, updatedAt: true } }),
     db.listing.findMany({ where: { published: true }, select: { slug: true, updatedAt: true } }),
     getCitiesWithCounts(200),
@@ -26,7 +29,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       where: { status: 'published' },
       select: { slug: true, updatedAt: true, publishedAt: true },
     }),
-    db.blogCategory.findMany({ select: { slug: true, updatedAt: true } }),
   ])
 
   const now = new Date()
@@ -63,12 +65,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: p.publishedAt ?? p.updatedAt,
       changeFrequency: 'monthly' as const,
       priority: 0.75,
-    })),
-    ...blogCategories.map((c) => ({
-      url: ensureAbsolute(blogCategoryPath(c.slug), base),
-      lastModified: c.updatedAt,
-      changeFrequency: 'weekly' as const,
-      priority: 0.7,
     })),
     ...categories.map(c => ({
       url: ensureAbsolute(categoryPath(c.slug), base),
