@@ -67,7 +67,7 @@ export function ListingDetailPage({ bundle }: { bundle: ListingBundle }) {
   const heroImage = images[0]
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-gray-50 overflow-x-clip">
       <div className="relative w-full max-w-[100vw] h-56 sm:h-72 md:h-80 overflow-hidden bg-gray-200">
         <OptimizedImage
           src={heroImage}
@@ -200,7 +200,7 @@ export function ListingDetailPage({ bundle }: { bundle: ListingBundle }) {
             </section>
           </div>
 
-          <aside className="space-y-6">
+          <aside className="space-y-6 min-w-0">
             <div className="bg-white border rounded-xl p-5">
               <div className="text-center">
                 <div className="text-4xl font-bold mb-1">{rating.toFixed(1)}</div>
