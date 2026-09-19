@@ -156,14 +156,14 @@ model VerificationToken {
 model Submission {
   id          String   @id @default(cuid())
   businessName String
-  description String
+  description String   @db.Text
   category    String
   address     String
   phone       String?
   website     String?
   email       String?
   ownerName   String
-  message     String?
+  message     String?  @db.Text
   image       String?  @db.MediumText
   gallery     String?  @db.LongText
   status      String   @default("pending")
