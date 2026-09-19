@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 
 const ChatBotWidget = dynamic(() => import('@/components/ChatBotWidget'), { ssr: false })
 const TrackingPixels = dynamic(() => import('@/components/tracking-pixels'), { ssr: false })
@@ -71,8 +72,14 @@ function useIdleMount(): boolean {
 }
 
 export function DeferredClientWidgets() {
+  const pathname = usePathname()
   const interacted = useInteractionMount()
   const idle = useIdleMount()
+
+  // Never load AdSense / chatbot / tracking on the admin panel — Auto Ads inject
+  // units site-wide wherever the script loads, so they were appearing on the
+  // admin dashboard (bad UX + against AdSense policy for no-content/admin pages).
+  if (pathname?.startsWith('/admin')) return null
 
   return (
     <>
