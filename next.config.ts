@@ -55,6 +55,11 @@ const nextConfig: NextConfig = {
       'agadir-beach-clubs-guide': 'agadir-beach-clubs-review-where-to-go',
       'exploring-the-lush-greens-agadirs-top-golf-courses': 'agadir-golf-courses',
       'places-to-work-agadir': 'best-cafes-for-remote-work-in-agadir',
+      // Day-trips cannibalization consolidation → the best-ranked pillar (magical-…, p4.7).
+      'top-day-trips-from-agadir-explore-moroccos-hidden-gems': 'magical-day-trips-from-agadir-your-ultimate-guide-to-southern-morocco-2026',
+      'discover-the-best-day-trips-from-agadir-a-travelers-guide': 'magical-day-trips-from-agadir-your-ultimate-guide-to-southern-morocco-2026',
+      'agadir-day-trips': 'magical-day-trips-from-agadir-your-ultimate-guide-to-southern-morocco-2026',
+      'best-day-trips-from-agadir': 'magical-day-trips-from-agadir-your-ultimate-guide-to-southern-morocco-2026',
     }
 
     try {
